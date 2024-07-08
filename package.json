@@ -1,0 +1,33 @@
+{
+  "name": "zsl-mini-webgl-engine",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "commit": "cz"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.6.0",
+    "commitizen": "^4.3.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "globals": "^15.8.0",
+    "prettier": "3.3.2",
+    "typescript": "^5.2.2",
+    "typescript-eslint": "7.15.0",
+    "vite": "^5.3.1"
+  },
+  "dependencies": {
+    "gl-matrix": "^3.4.3"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}
