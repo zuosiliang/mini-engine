@@ -1,4 +1,4 @@
-import { mat4, vec3 } from "gl-matrix";
+import { mat4, vec3, quat } from "gl-matrix";
 import Renderer from "./Renderer";
 
 class Box {
@@ -6,10 +6,31 @@ class Box {
     | { position: WebGLBuffer | null; indices: WebGLBuffer | null }
     | undefined;
   renderer: Renderer;
+  position: vec3;
+  scale: vec3;
+  rotation: quat;
   constructor() {
     this.renderer = window.renderer;
-
+    this.position = vec3.create();
+    this.scale = vec3.fromValues(1, 1, 1);
+    this.rotation = quat.create();
     this.initBuffers();
+  }
+
+  SetPosition(x: number, y: number, z: number) {
+    vec3.set(this.position, x, y, z);
+  }
+
+  RotateX(rad: number) {
+    quat.rotateX(this.rotation, this.rotation, rad);
+  }
+
+  RotateY(rad: number) {
+    quat.rotateY(this.rotation, this.rotation, rad);
+  }
+
+  Scale(x: number, y: number, z: number) {
+    vec3.set(this.scale, x, y, z);
   }
 
   private loadShader(type: number, source: string): WebGLShader | null {
@@ -186,14 +207,27 @@ class Box {
     const aspect = canvas.clientWidth / canvas.clientHeight;
     const zNear = 0.1;
     const zFar = 100.0;
-    const projectionMatrix = mat4.create();
 
+    // Initialize the model matrix and apply transformations
+    const modelMatrix = mat4.create();
+    mat4.fromRotationTranslationScale(
+      modelMatrix,
+      this.rotation,
+      this.position,
+      this.scale,
+    );
+
+    // Initialize the projection matrix
+    const projectionMatrix = mat4.create();
     mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
 
-    const modelViewMatrix = mat4.create();
-    mat4.lookAt(modelViewMatrix, cameraPosition, cameraTarget, upVector);
+    // Create the view matrix using lookAt
+    const viewMatrix = mat4.create();
+    mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, upVector);
 
-    mat4.translate(modelViewMatrix, modelViewMatrix, [0.0, 0.0, -6.0]);
+    // Combine the model matrix with the view matrix to create the model-view matrix
+    const modelViewMatrix = mat4.create();
+    mat4.multiply(modelViewMatrix, viewMatrix, modelMatrix);
 
     if (!this.buffers) {
       throw new Error("buffers went wrong");
