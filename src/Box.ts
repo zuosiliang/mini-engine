@@ -1,35 +1,31 @@
 import { mat4, vec3, quat } from "gl-matrix";
 import Renderer from "./Renderer";
+import Object3D from "./Object3D";
 
-class Box {
+class Box extends Object3D {
   buffers:
     | { position: WebGLBuffer | null; indices: WebGLBuffer | null }
     | undefined;
   renderer: Renderer;
-  position: vec3;
-  scale: vec3;
-  rotation: quat;
-  constructor() {
+  constructor(position: vec3, rotation: vec3, scale: quat) {
+    super(position, rotation, scale);
     this.renderer = window.renderer;
-    this.position = vec3.create();
-    this.scale = vec3.fromValues(1, 1, 1);
-    this.rotation = quat.create();
     this.initBuffers();
   }
 
-  SetPosition(x: number, y: number, z: number) {
+  setPosition(x: number, y: number, z: number) {
     vec3.set(this.position, x, y, z);
   }
 
-  RotateX(rad: number) {
+  rotateX(rad: number) {
     quat.rotateX(this.rotation, this.rotation, rad);
   }
 
-  RotateY(rad: number) {
+  rotateY(rad: number) {
     quat.rotateY(this.rotation, this.rotation, rad);
   }
 
-  Scale(x: number, y: number, z: number) {
+  setScale(x: number, y: number, z: number) {
     vec3.set(this.scale, x, y, z);
   }
 
@@ -157,15 +153,16 @@ class Box {
   }
 
   render() {
-    const { gl, canvas } = this.renderer;
+    const { gl, camera } = this.renderer;
 
     // Vertex shader program
     const vsSource = `
             attribute vec4 aVertexPosition;
-            uniform mat4 uModelViewMatrix;
+            uniform mat4 uModelMatrix;
+            uniform mat4 uViewMatrix;
             uniform mat4 uProjectionMatrix;
             void main(void) {
-                gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+                gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * aVertexPosition;
             }
         `;
 
@@ -191,22 +188,10 @@ class Box {
           shaderProgram,
           "uProjectionMatrix",
         ),
-        modelViewMatrix: gl.getUniformLocation(
-          shaderProgram,
-          "uModelViewMatrix",
-        ),
+        viewMatrix: gl.getUniformLocation(shaderProgram, "uViewMatrix"),
+        modelMatrix: gl.getUniformLocation(shaderProgram, "uModelMatrix"),
       },
     };
-
-    // Camera position and orientation
-    const cameraPosition = vec3.fromValues(0, 0, 6);
-    const cameraTarget = vec3.fromValues(0, 0, 0);
-    const upVector = vec3.fromValues(0, 1, 0);
-
-    const fieldOfView = (45 * Math.PI) / 180;
-    const aspect = canvas.clientWidth / canvas.clientHeight;
-    const zNear = 0.1;
-    const zFar = 100.0;
 
     // Initialize the model matrix and apply transformations
     const modelMatrix = mat4.create();
@@ -216,18 +201,6 @@ class Box {
       this.position,
       this.scale,
     );
-
-    // Initialize the projection matrix
-    const projectionMatrix = mat4.create();
-    mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
-
-    // Create the view matrix using lookAt
-    const viewMatrix = mat4.create();
-    mat4.lookAt(viewMatrix, cameraPosition, cameraTarget, upVector);
-
-    // Combine the model matrix with the view matrix to create the model-view matrix
-    const modelViewMatrix = mat4.create();
-    mat4.multiply(modelViewMatrix, viewMatrix, modelMatrix);
 
     if (!this.buffers) {
       throw new Error("buffers went wrong");
@@ -257,12 +230,17 @@ class Box {
     gl.uniformMatrix4fv(
       programInfo.uniformLocations.projectionMatrix,
       false,
-      projectionMatrix,
+      camera.projectionMatrix,
     );
     gl.uniformMatrix4fv(
-      programInfo.uniformLocations.modelViewMatrix,
+      programInfo.uniformLocations.viewMatrix,
       false,
-      modelViewMatrix,
+      camera.viewMatrix,
+    );
+    gl.uniformMatrix4fv(
+      programInfo.uniformLocations.modelMatrix,
+      false,
+      modelMatrix,
     );
 
     {

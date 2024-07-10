@@ -1,16 +1,25 @@
-import Box from "./Box";
+import Object3D from "./Object3D";
+import Camera from "./Camera";
+import Renderer from "./Renderer";
 
 class World {
-  meshes: Box[];
+  objs: Object3D[];
+  renderer: Renderer;
   constructor() {
-    this.meshes = [];
+    this.objs = [];
+    this.renderer = window.renderer;
   }
-  add(mesh: Box) {
-    this.meshes = [...this.meshes, mesh];
+  add(obj: Object3D | Camera) {
+    if (obj instanceof Camera) {
+      this.renderer.updateCamera(obj);
+      return;
+    }
+
+    this.objs = [...this.objs, obj];
   }
   render() {
-    this.meshes.forEach((mesh) => {
-      mesh.render();
+    this.objs.forEach((obj) => {
+      obj.render();
     });
   }
 }

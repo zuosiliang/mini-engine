@@ -1,9 +1,11 @@
 import World from "./World";
+import Camera from "./Camera";
 
 class Renderer {
   gl!: WebGL2RenderingContext;
   canvas!: HTMLCanvasElement;
   world: World | undefined;
+  camera: Camera;
 
   constructor(canvas?: HTMLCanvasElement) {
     if (canvas) {
@@ -31,6 +33,17 @@ class Renderer {
 
     window.renderer = this;
     this.world = new World();
+
+    this.camera = new Camera(
+      (45 * Math.PI) / 180,
+      canvas.clientWidth / canvas.clientHeight,
+      0.1,
+      100.0,
+    );
+  }
+
+  updateCamera(newCamera: Camera) {
+    this.camera = newCamera;
   }
 
   render() {
