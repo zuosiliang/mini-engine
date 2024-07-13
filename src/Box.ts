@@ -1,98 +1,163 @@
-import { mat4, vec3, quat } from "gl-matrix";
-import Renderer from "./Renderer";
-import Object3D from "./Object3D";
+import { vec3, quat } from "gl-matrix";
+import Geometry from "./Geometry";
 
-class Box extends Object3D {
-  buffers:
-    | { position: WebGLBuffer | null; indices: WebGLBuffer | null }
-    | undefined;
-  renderer: Renderer;
+class Box extends Geometry {
   constructor(position: vec3, rotation: vec3, scale: quat) {
     super(position, rotation, scale);
-    this.renderer = window.renderer;
     this.initBuffers();
-  }
-
-  setPosition(x: number, y: number, z: number) {
-    vec3.set(this.position, x, y, z);
-  }
-
-  rotateX(rad: number) {
-    quat.rotateX(this.rotation, this.rotation, rad);
-  }
-
-  rotateY(rad: number) {
-    quat.rotateY(this.rotation, this.rotation, rad);
-  }
-
-  setScale(x: number, y: number, z: number) {
-    vec3.set(this.scale, x, y, z);
-  }
-
-  private loadShader(type: number, source: string): WebGLShader | null {
-    const { gl } = this.renderer;
-
-    const shader = gl.createShader(type);
-
-    if (!shader) {
-      throw new Error("Something went wrong while creating the shader");
-    }
-
-    gl.shaderSource(shader, source);
-    gl.compileShader(shader);
-
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      console.error(
-        "An error occurred compiling the shaders: " +
-          gl.getShaderInfoLog(shader),
-      );
-      gl.deleteShader(shader);
-      return null;
-    }
-
-    return shader;
-  }
-
-  private initShaderProgram(
-    vsSource: string,
-    fsSource: string,
-  ): WebGLProgram | null {
-    const { gl } = this.renderer;
-
-    const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);
-    const fragmentShader = this.loadShader(gl.FRAGMENT_SHADER, fsSource);
-
-    if (!vertexShader || !fragmentShader) {
-      return null;
-    }
-
-    const shaderProgram = gl.createProgram();
-
-    if (!shaderProgram) {
-      throw new Error("Unable to create program");
-    }
-
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);
-
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-      console.error(
-        "Unable to initialize the shader program: " +
-          gl.getProgramInfoLog(shaderProgram),
-      );
-      return null;
-    }
-
-    return shaderProgram;
   }
 
   private initBuffers() {
     const { gl } = this.renderer;
 
     const positions = [
-      -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0,
-      -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, -1.0,
+      -1.0,
+      -1.0,
+      1.0,
+      1.0,
+      -1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      -1.0,
+      1.0,
+      1.0, // Front face
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0,
+      1.0,
+      -1.0,
+      1.0,
+      1.0,
+      -1.0,
+      1.0,
+      -1.0,
+      -1.0, // Back face
+      -1.0,
+      1.0,
+      -1.0,
+      -1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      -1.0, // Top face
+      -1.0,
+      -1.0,
+      -1.0,
+      1.0,
+      -1.0,
+      -1.0,
+      1.0,
+      -1.0,
+      1.0,
+      -1.0,
+      -1.0,
+      1.0, // Bottom face
+      1.0,
+      -1.0,
+      -1.0,
+      1.0,
+      1.0,
+      -1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      -1.0,
+      1.0, // Right face
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0,
+      1.0,
+      -1.0,
+      1.0,
+      1.0,
+      -1.0,
+      1.0,
+      -1.0, // Left face
+    ];
+
+    const normals = [
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0, // Front face
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0, // Back face
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0, // Top face
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0, // Bottom face
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0, // Right face
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.0,
+      0.0, // Left face
     ];
 
     const indices = [
@@ -108,35 +173,39 @@ class Box extends Object3D {
       4,
       6,
       7, // back
-      3,
-      2,
-      6,
-      3,
-      6,
-      7, // top
-      4,
-      5,
-      1,
-      4,
-      1,
-      0, // bottom
-      1,
-      5,
-      6,
-      1,
-      6,
-      2, // right
-      4,
-      0,
-      3,
-      4,
-      3,
-      7, // left
+      8,
+      9,
+      10,
+      8,
+      10,
+      11, // top
+      12,
+      13,
+      14,
+      12,
+      14,
+      15, // bottom
+      16,
+      17,
+      18,
+      16,
+      18,
+      19, // right
+      20,
+      21,
+      22,
+      20,
+      22,
+      23, // left
     ];
 
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+    const normalBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
 
     const indexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
@@ -147,62 +216,24 @@ class Box extends Object3D {
     );
 
     this.buffers = {
-      position: positionBuffer,
-      indices: indexBuffer,
+      positions: { buffer: positionBuffer, data: positions },
+      normals: { buffer: normalBuffer, data: normals },
+      indices: { buffer: indexBuffer, data: indices },
     };
   }
 
-  render() {
-    const { gl, camera } = this.renderer;
+  bind(shaderProgram: WebGLProgram) {
+    const { gl } = this.renderer;
+    const { buffers } = this;
 
-    // Vertex shader program
-    const vsSource = `
-            attribute vec4 aVertexPosition;
-            uniform mat4 uModelMatrix;
-            uniform mat4 uViewMatrix;
-            uniform mat4 uProjectionMatrix;
-            void main(void) {
-                gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * aVertexPosition;
-            }
-        `;
-
-    // Fragment shader program
-    const fsSource = `
-            void main(void) {
-                gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-            }
-        `;
-
-    const shaderProgram = this.initShaderProgram(vsSource, fsSource);
-    if (!shaderProgram) {
-      return;
-    }
-
-    const programInfo = {
-      program: shaderProgram,
-      attribLocations: {
-        vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
-      },
-      uniformLocations: {
-        projectionMatrix: gl.getUniformLocation(
-          shaderProgram,
-          "uProjectionMatrix",
-        ),
-        viewMatrix: gl.getUniformLocation(shaderProgram, "uViewMatrix"),
-        modelMatrix: gl.getUniformLocation(shaderProgram, "uModelMatrix"),
-      },
-    };
-
-    // Initialize the model matrix and apply transformations
-    const modelMatrix = mat4.create();
-    mat4.fromRotationTranslationScale(
-      modelMatrix,
-      this.rotation,
-      this.position,
-      this.scale,
+    const vertexPosition = gl.getAttribLocation(
+      shaderProgram,
+      "aVertexPosition",
     );
 
-    if (!this.buffers) {
+    const vertexNormal = gl.getAttribLocation(shaderProgram, "aVertexNormal");
+
+    if (!buffers) {
       throw new Error("buffers went wrong");
     }
     {
@@ -211,44 +242,37 @@ class Box extends Object3D {
       const normalize = false;
       const stride = 0;
       const offset = 0;
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.position);
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.positions.buffer);
       gl.vertexAttribPointer(
-        programInfo.attribLocations.vertexPosition,
+        vertexPosition,
         numComponents,
         type,
         normalize,
         stride,
         offset,
       );
-      gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+      gl.enableVertexAttribArray(vertexPosition);
     }
-
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.indices);
-
-    gl.useProgram(programInfo.program);
-
-    gl.uniformMatrix4fv(
-      programInfo.uniformLocations.projectionMatrix,
-      false,
-      camera.projectionMatrix,
-    );
-    gl.uniformMatrix4fv(
-      programInfo.uniformLocations.viewMatrix,
-      false,
-      camera.viewMatrix,
-    );
-    gl.uniformMatrix4fv(
-      programInfo.uniformLocations.modelMatrix,
-      false,
-      modelMatrix,
-    );
 
     {
-      const vertexCount = 36;
-      const type = gl.UNSIGNED_SHORT;
+      const numComponents = 3;
+      const type = gl.FLOAT;
+      const normalize = false;
+      const stride = 0;
       const offset = 0;
-      gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normals.buffer);
+      gl.vertexAttribPointer(
+        vertexNormal,
+        numComponents,
+        type,
+        normalize,
+        stride,
+        offset,
+      );
+      gl.enableVertexAttribArray(vertexNormal);
     }
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices.buffer);
   }
 }
 

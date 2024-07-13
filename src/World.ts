@@ -1,20 +1,24 @@
-import Object3D from "./Object3D";
 import Camera from "./Camera";
 import Renderer from "./Renderer";
+import Light from "./Light";
+import Mesh from "./Mesh";
 
 class World {
-  objs: Object3D[];
+  objs: Mesh[];
   renderer: Renderer;
   constructor() {
     this.objs = [];
     this.renderer = window.renderer;
   }
-  add(obj: Object3D | Camera) {
+  add(obj: Mesh | Camera | Light) {
     if (obj instanceof Camera) {
       this.renderer.updateCamera(obj);
       return;
     }
-
+    if (obj instanceof Light) {
+      this.renderer.updateLights(obj);
+      return;
+    }
     this.objs = [...this.objs, obj];
   }
   render() {

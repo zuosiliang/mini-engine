@@ -1,11 +1,13 @@
 import World from "./World";
 import Camera from "./Camera";
+import Light from "./Light";
 
 class Renderer {
   gl!: WebGL2RenderingContext;
   canvas!: HTMLCanvasElement;
   world: World | undefined;
   camera: Camera;
+  lights: Light[];
 
   constructor(canvas?: HTMLCanvasElement) {
     if (canvas) {
@@ -40,10 +42,16 @@ class Renderer {
       0.1,
       100.0,
     );
+
+    this.lights = [];
   }
 
   updateCamera(newCamera: Camera) {
     this.camera = newCamera;
+  }
+
+  updateLights(newLight: Light) {
+    this.lights = [...this.lights, newLight];
   }
 
   render() {
