@@ -15,11 +15,13 @@ class Shader {
   constructor(vsSource: string, fsSource: string, defineConfig?: DefineConfig) {
     this.renderer = window.renderer;
     this.vsSource = defineConfig
-      ? this.customShader(vsSource, defineConfig)
+      ? this.modifyDefines(vsSource, defineConfig)
       : vsSource;
+
     this.fsSource = defineConfig
-      ? this.customShader(fsSource, defineConfig)
+      ? this.modifyDefines(fsSource, defineConfig)
       : fsSource;
+
     this.initShaderProgram(this.vsSource, this.fsSource);
     this.uniforms = {};
   }
@@ -80,8 +82,22 @@ class Shader {
     }
   }
 
-  private customShader(src, defines) {
-    return src;
+  setFloatArr(name: string, value: any) {
+    const { gl } = this.renderer;
+    if (this.shaderProgram) {
+      this.uniforms[name] = value;
+      gl.uniform1fv(gl.getUniformLocation(this.shaderProgram, name), value);
+    }
+  }
+
+  private modifyDefines(src: string, defineConfig: DefineConfig) {
+    const lines = src.split("\n");
+
+    if (defineConfig.pointLight !== undefined) {
+      const definePointLight = `#define NR_POINT_LIGHTS ${defineConfig.pointLight}`;
+      lines.splice(3, 0, definePointLight);
+    }
+    return lines.join("\n");
   }
 
   private loadShader(type: number, source: string): WebGLShader | null {

@@ -1,17 +1,15 @@
-import Geometry from "./Geometry";
 import Renderer from "./Renderer";
+import Shader from "./Shader";
 
 abstract class Material {
-  shaderProgram: WebGLProgram | null | undefined;
-  render(geometry: Geometry) {
-    console.log(geometry);
-  }
+  shader: Shader | undefined;
 
   initShaderProgram() {}
   renderer: Renderer;
   constructor() {
     this.renderer = window.renderer;
   }
-  abstract bind(geometry: Geometry): void;
+  abstract bind(): void;
+  abstract updateShader(shader: Shader): void;
 }
 export default Material;

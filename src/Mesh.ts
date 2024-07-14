@@ -1,23 +1,68 @@
 import Material from "./Material";
 import Renderer from "./Renderer";
 import Geometry from "./Geometry";
+import Shader from "./Shader";
+import MeshPhongMaterial from "./materials/MeshPhongMaterial";
+import MeshBasicMaterial from "./materials/MeshBasicMaterial";
+import PhongShader from "./shaders/PhongShader";
+import BasicShader from "./shaders/BasicShader";
+import { vec3, mat4 } from "gl-matrix";
 
 class Mesh {
   geometry: Geometry;
   material: Material;
   renderer: Renderer;
   shaderProgram: WebGLProgram | null | undefined;
+  shader: Shader | undefined;
   constructor(geometry: Geometry, material: Material) {
     this.geometry = geometry;
     this.material = material;
     this.renderer = window.renderer;
-    this.shaderProgram = this.material.shaderProgram;
+  }
+
+  private createShaderProgram() {
+    const { lights } = this.renderer;
+
+    if (this.material instanceof MeshPhongMaterial) {
+      const shader = new Shader(PhongShader.vsSource, PhongShader.fsSource, {
+        pointLight: lights.length,
+      });
+      this.shader = shader;
+    }
+    if (this.material instanceof MeshBasicMaterial) {
+      const shader = new Shader(BasicShader.vsSource, BasicShader.fsSource);
+      this.shader = shader;
+    }
+    this.geometry.updateShader(this.shader);
+    this.material.updateShader(this.shader);
   }
 
   render() {
     const { geometry, material } = this;
-    geometry.bind(this.shaderProgram);
-    material.bind(geometry);
+    const { camera } = this.renderer;
+
+    const modelMatrix = mat4.create();
+    mat4.fromRotationTranslationScale(
+      modelMatrix,
+      geometry.rotation,
+      geometry.position,
+      geometry.scale,
+    );
+
+    const normalMatrix = mat4.create();
+    mat4.invert(normalMatrix, modelMatrix);
+    mat4.transpose(normalMatrix, normalMatrix);
+
+    this.createShaderProgram();
+    this.shader.use();
+    this.shader.setMat4("uViewMatrix", camera.viewMatrix);
+    this.shader.setMat4("uProjectionMatrix", camera.projectionMatrix);
+    this.shader.setMat4("uModelMatrix", modelMatrix);
+    this.shader.setMat4("uNormalMatrix", normalMatrix);
+    this.shader.setVec3("uViewWorldPosition", camera.position);
+
+    geometry.bind();
+    material.bind();
 
     this.draw();
   }

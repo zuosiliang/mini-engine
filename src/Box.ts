@@ -1,5 +1,6 @@
 import { vec3, quat } from "gl-matrix";
 import Geometry from "./Geometry";
+import Shader from "./Shader";
 
 class Box extends Geometry {
   constructor(position: vec3, rotation: vec3, scale: quat) {
@@ -222,10 +223,14 @@ class Box extends Geometry {
     };
   }
 
-  bind(shaderProgram: WebGLProgram) {
-    const { gl } = this.renderer;
-    const { buffers } = this;
+  updateShader(shader: Shader) {
+    this.shader = shader;
+  }
 
+  bind() {
+    const { gl } = this.renderer;
+    const { buffers, shader } = this;
+    const { shaderProgram } = shader;
     const vertexPosition = gl.getAttribLocation(
       shaderProgram,
       "aVertexPosition",
