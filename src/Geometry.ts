@@ -4,12 +4,14 @@ import { vec3, quat } from "gl-matrix";
 import Shader from "./Shader";
 type AttributeType = "positions" | "normals" | "indices";
 
-type AttributeBuffer = Record<
-  AttributeType,
-  {
-    data: number[];
-    buffer: WebGLBuffer | null;
-  }
+type AttributeBuffer = Partial<
+  Record<
+    AttributeType,
+    {
+      data: number[];
+      buffer: WebGLBuffer | null;
+    }
+  >
 >;
 
 abstract class Geometry extends Object3D {

@@ -1,6 +1,8 @@
 import World from "./World";
 import Camera from "./Camera";
 import Light from "./Light";
+import Skybox from "./Skybox";
+import LoadingManager from "./LoadingManager";
 
 class Renderer {
   gl!: WebGL2RenderingContext;
@@ -8,6 +10,7 @@ class Renderer {
   world: World | undefined;
   camera: Camera;
   lights: Light[];
+  skybox: Skybox | undefined;
 
   constructor(canvas?: HTMLCanvasElement) {
     if (canvas) {
@@ -34,6 +37,8 @@ class Renderer {
     });
 
     window.renderer = this;
+    window.loadingManager = new LoadingManager();
+
     this.world = new World();
 
     this.camera = new Camera(
@@ -54,17 +59,31 @@ class Renderer {
     this.lights = [...this.lights, newLight];
   }
 
+  updateSkybox(newSkybox: Skybox) {
+    this.skybox = newSkybox;
+  }
+
   render() {
+    // window.loadingManager.setOnLoad(() => {
     if (!this.world) {
       throw new Error("world is undefined");
     }
-    const { gl } = this;
+    const { gl, skybox } = this;
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clearDepth(1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    // gl.depthMask(false);
+
+    skybox.render();
+
+    // gl.depthMask(true);
+
+    console.log("world");
     this.world.render();
+    // });
   }
 }
 
