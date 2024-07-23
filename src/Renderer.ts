@@ -2,7 +2,7 @@ import World from "./World";
 import Camera from "./Camera";
 import Light from "./Light";
 import Skybox from "./Skybox";
-import LoadingManager from "./LoadingManager";
+import LoadingManager from "./loader/LoadingManager";
 
 class Renderer {
   gl!: WebGL2RenderingContext;
@@ -77,7 +77,7 @@ class Renderer {
 
     // gl.depthMask(false);
 
-    skybox.render();
+    // skybox.render();
     this.world.render();
 
     // gl.depthMask(true);

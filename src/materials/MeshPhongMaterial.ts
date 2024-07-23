@@ -1,20 +1,20 @@
 import Material from "../Material";
 import Shader from "../Shader";
+import Texture from "../textures/Texture";
 
 class MeshPhongMaterial extends Material {
   color: [number, number, number];
   specular: [number, number, number];
   shininess: number;
+  colorMap: Texture;
 
-  constructor(
-    color: [number, number, number],
-    specular: [number, number, number],
-    shininess: number,
-  ) {
+  constructor(configs) {
     super();
+    const { color, specular, shininess, colorMap } = configs;
     this.color = color;
     this.specular = specular;
     this.shininess = shininess;
+    this.colorMap = colorMap;
   }
 
   updateShader(shader: Shader): void {
@@ -23,11 +23,20 @@ class MeshPhongMaterial extends Material {
 
   bind() {
     const { shader } = this;
+    const { gl } = this.renderer;
 
     if (shader) {
       const lightConfigs = this.calcLights();
 
-      shader.setVec3("uMaterialColor", this.color);
+      if (this.colorMap) {
+        shader.setInt("uUseTexture", 1);
+        shader.setInt("u_texture", 0);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.colorMap.texture);
+      } else {
+        shader.setInt("uUseTexture", 0);
+        shader.setVec3("uMaterialColor", this.color);
+      }
       shader.setVec3("uMaterialSpecular", this.specular);
       shader.setFloat("uMaterialShininess", this.shininess);
 

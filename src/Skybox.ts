@@ -3,7 +3,7 @@ import Shader from "./Shader";
 import CubemapShader from "./shaders/CubemapShader";
 import Geometry from "./Geometry";
 import { vec3, quat, mat4, mat3 } from "gl-matrix";
-import LoadingManager from "./LoadingManager";
+import LoadingManager from "./loader/LoadingManager";
 
 type SkyboxSrcs = [
   right: string,

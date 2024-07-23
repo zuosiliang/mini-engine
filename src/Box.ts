@@ -161,6 +161,57 @@ class Box extends Geometry {
       0.0, // Left face
     ];
 
+    const uvs = [
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      1.0,
+      1.0,
+      0.0,
+      1.0, // Front face
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      1.0,
+      1.0,
+      0.0,
+      1.0, // Back face
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      1.0,
+      1.0,
+      0.0,
+      1.0, // Top face
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      1.0,
+      1.0,
+      0.0,
+      1.0, // Bottom face
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      1.0,
+      1.0,
+      0.0,
+      1.0, // Right face
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      1.0,
+      1.0,
+      0.0,
+      1.0, // Left face
+    ];
+
     const indices = [
       0,
       1,
@@ -208,6 +259,10 @@ class Box extends Geometry {
     gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
 
+    const uvBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvs), gl.STATIC_DRAW);
+
     const indexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(
@@ -219,6 +274,7 @@ class Box extends Geometry {
     this.buffers = {
       positions: { buffer: positionBuffer, data: positions },
       normals: { buffer: normalBuffer, data: normals },
+      uvs: { buffer: uvBuffer, data: uvs },
       indices: { buffer: indexBuffer, data: indices },
     };
   }
@@ -235,8 +291,8 @@ class Box extends Geometry {
       shaderProgram,
       "aVertexPosition",
     );
-
     const vertexNormal = gl.getAttribLocation(shaderProgram, "aVertexNormal");
+    const vertexUV = gl.getAttribLocation(shaderProgram, "aTextureCoord");
 
     if (!buffers) {
       throw new Error("buffers went wrong");
@@ -275,6 +331,24 @@ class Box extends Geometry {
         offset,
       );
       gl.enableVertexAttribArray(vertexNormal);
+    }
+
+    {
+      const numComponents = 2;
+      const type = gl.FLOAT;
+      const normalize = false;
+      const stride = 0;
+      const offset = 0;
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.uvs.buffer);
+      gl.vertexAttribPointer(
+        vertexUV,
+        numComponents,
+        type,
+        normalize,
+        stride,
+        offset,
+      );
+      gl.enableVertexAttribArray(vertexUV);
     }
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices.buffer);

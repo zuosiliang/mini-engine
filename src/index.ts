@@ -9,6 +9,7 @@ import Skybox from "./Skybox";
 import Plane from "./Plane";
 import BrowseControl from "./controls/BrowseControl";
 import OrbitControl from "./controls/OrbitControl";
+import TextureLoader from "./loader/TextureLoader";
 
 const main = () => {
   const canvasDom = document.getElementById("glCanvas");
@@ -24,28 +25,43 @@ const main = () => {
   box2.setPosition(8, 3, -8);
   box2.rotateX(-Math.PI * 2);
   box2.setScale(1, 1, 1);
-  const box3 = new Box();
-  box3.setPosition(-3, 1, -3);
-  box3.rotateX(-Math.PI * 2);
-  box3.setScale(1, 1, 1);
-  const plane = new Plane();
-  plane.setPosition(0, -10, -13);
-  plane.rotateX((Math.PI * 1) / 3);
-  plane.setScale(10, 10, 10);
+  // const box3 = new Box();
+  // box3.setPosition(-3, 1, -3);
+  // box3.rotateX(-Math.PI * 2);
+  // box3.setScale(1, 1, 1);
+  // const plane = new Plane();
+  // plane.setPosition(0, -10, -13);
+  // plane.rotateX((Math.PI * 1) / 3);
+  // plane.setScale(10, 10, 10);
 
   const light1 = new PointLight([0, 0, -3], [1, 1, 1], 1.0, 0.09, 0.032);
   const light2 = new PointLight([0, 0, 0], [1, 1, 1], 1.0, 0.09, 0.032);
   const light3 = new PointLight([-5, -5, -5], [1, 1, 1], 1.0, 0.09, 0.032);
   const light4 = new PointLight([0, 0, -2], [1, 1, 1], 1.0, 0.09, 0.032);
 
-  const mesh = new Mesh(box, new MeshPhongMaterial([1, 0, 0], [1, 1, 1], 400));
+  const textureLoader = new TextureLoader();
+  const colorMap = textureLoader.load(
+    "../TilesCeramicSquareLarge001_COL_1K.jpg",
+  );
+
+  const mesh = new Mesh(
+    box,
+    new MeshBasicMaterial({ color: [0, 0.4, 1], colorMap }),
+  );
+
+  // const mesh = new Mesh(box, new MeshPhongMaterial([1, 0, 0], [1, 1, 1], 400));
   const mesh2 = new Mesh(
     box2,
-    new MeshPhongMaterial([0, 1, 0], [1, 1, 1], 300),
+    new MeshPhongMaterial({
+      color: [0, 1, 0],
+      specular: [1, 1, 1],
+      shininess: 300,
+      colorMap,
+    }),
   );
-  const mesh3 = new Mesh(box3, new MeshBasicMaterial([0, 0.4, 1]));
+  // const mesh3 = new Mesh(box3, new MeshBasicMaterial([0, 0.4, 1]));
 
-  const meshplane = new Mesh(plane, new MeshBasicMaterial([0, 0.4, 1]));
+  // const meshplane = new Mesh(plane, new MeshBasicMaterial([0, 0.4, 1]));
 
   const camera = new Camera(
     (45 * Math.PI) / 180,
@@ -57,26 +73,26 @@ const main = () => {
   camera.setPosition(0, 0, 10);
   // camera.updateMatrix();
 
-  const skybox = new Skybox([
-    "../right1.jpg",
-    "../left1.jpg",
-    "../top1.jpg",
-    "../bottom1.jpg",
-    "../back1.jpg",
-    "../front1.jpg",
-  ]);
+  // const skybox = new Skybox([
+  //   "../right1.jpg",
+  //   "../left1.jpg",
+  //   "../top1.jpg",
+  //   "../bottom1.jpg",
+  //   "../back1.jpg",
+  //   "../front1.jpg",
+  // ]);
 
   const controls = new OrbitControl(camera, canvasDom);
   world.add(mesh);
   world.add(mesh2);
-  world.add(mesh3);
-  world.add(meshplane);
+  // world.add(mesh3);
+  // world.add(meshplane);
   world.add(camera);
   world.add(light1);
   world.add(light2);
   world.add(light3);
   world.add(light4);
-  world.add(skybox);
+  // world.add(skybox);
 
   // const controls = new BrowseControl(canvasDom, camera);
 

@@ -7,7 +7,6 @@ type DefineConfig = {
 
 class Shader {
   uniforms: Record<string, mat4 | mat3 | vec3 | vec4 | number>;
-
   vsSource: string;
   fsSource: string;
   renderer: Renderer;
