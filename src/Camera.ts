@@ -24,7 +24,7 @@ class Camera {
     this.aspect = aspect;
     this.near = near;
     this.far = far;
-    this.position = position ?? vec3.fromValues(0, 0, 6);
+    this.position = position ?? vec3.fromValues(0, 0, 0);
     this.target = target ?? vec3.fromValues(0, 0, 0);
     this.up = up ?? vec3.fromValues(0, 1, 0);
     this.updateMatrix();
@@ -48,6 +48,10 @@ class Camera {
     // Create the view matrix using lookAt
     const viewMatrix = mat4.create();
     mat4.lookAt(viewMatrix, this.position, this.target, this.up);
+    this.viewMatrix = viewMatrix;
+  }
+
+  setViewMatrix(viewMatrix: mat4) {
     this.viewMatrix = viewMatrix;
   }
 }

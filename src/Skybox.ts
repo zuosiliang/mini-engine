@@ -273,7 +273,6 @@ class Skybox extends Geometry {
   }
 
   render() {
-    console.log("skybox");
     const { gl, camera } = this.renderer;
     const { shaderProgram } = this.shader;
     const { buffers, shader } = this;

@@ -78,11 +78,10 @@ class Renderer {
     // gl.depthMask(false);
 
     skybox.render();
+    this.world.render();
 
     // gl.depthMask(true);
 
-    console.log("world");
-    this.world.render();
     // });
   }
 }
