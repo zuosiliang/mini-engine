@@ -9,7 +9,9 @@ import Skybox from "./Skybox";
 import Plane from "./Plane";
 import BrowseControl from "./controls/BrowseControl";
 import OrbitControl from "./controls/OrbitControl";
-import TextureLoader from "./loader/TextureLoader";
+import TextureLoader from "./loaders/TextureLoader";
+import OutlineRenderer from "./effectRenderers/OutlineRenderer";
+import GPUPicker from "./GPUPicker";
 
 const main = () => {
   const canvasDom = document.getElementById("glCanvas");
@@ -82,6 +84,7 @@ const main = () => {
   //   "../front1.jpg",
   // ]);
 
+  const picker = new GPUPicker({ renderer, canvas: canvasDom });
   const controls = new OrbitControl(camera, canvasDom);
   world.add(mesh);
   world.add(mesh2);
@@ -96,15 +99,19 @@ const main = () => {
 
   // const controls = new BrowseControl(canvasDom, camera);
 
+  const outlineRenderer = new OutlineRenderer({ renderer });
   const r = (time) => {
     time *= 0.001;
 
     // const cameraPosition = [Math.cos(time * 0.1), 0, Math.sin(time * 0.1)];
     // camera.setPosition(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
 
+    const selected = picker.pick() ?? [];
+    console.log("selected", selected);
     camera.updateMatrix();
     // controls.update();
-    renderer.render();
+    outlineRenderer.updateSelectedObjects(selected);
+    outlineRenderer.render();
 
     requestAnimationFrame(r);
   };

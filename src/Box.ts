@@ -353,6 +353,10 @@ class Box extends Geometry {
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices.buffer);
   }
+
+  clone() {
+    return new Box([...this.position], [...this.rotation], [...this.scale]);
+  }
 }
 
 export default Box;

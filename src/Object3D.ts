@@ -7,8 +7,8 @@ class Object3D {
   scale: vec3;
   constructor(position?: vec3, rotation?: vec3, scale?: quat) {
     this.position = position ?? vec3.create();
-    this.scale = rotation ?? vec3.fromValues(1, 1, 1);
-    this.rotation = scale ?? quat.create();
+    this.scale = scale ?? vec3.fromValues(1, 1, 1);
+    this.rotation = rotation ?? quat.create();
   }
 
   setPosition(x: number, y: number, z: number) {

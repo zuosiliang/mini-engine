@@ -26,6 +26,8 @@ abstract class Geometry extends Object3D {
   abstract bind(): void;
 
   abstract updateShader(shader: Shader): void;
+
+  abstract clone(): any;
 }
 
 export default Geometry;

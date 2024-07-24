@@ -2,7 +2,7 @@ import World from "./World";
 import Camera from "./Camera";
 import Light from "./Light";
 import Skybox from "./Skybox";
-import LoadingManager from "./loader/LoadingManager";
+import LoadingManager from "./loaders/LoadingManager";
 
 class Renderer {
   gl!: WebGL2RenderingContext;
@@ -19,7 +19,7 @@ class Renderer {
       throw new Error("The provided canvas is not or undefined");
     }
 
-    const gl = this.canvas.getContext("webgl2");
+    const gl = this.canvas.getContext("webgl2", { stencil: true });
     if (gl) {
       this.gl = gl;
     } else {
@@ -69,11 +69,13 @@ class Renderer {
       throw new Error("world is undefined");
     }
     const { gl, skybox } = this;
+    gl.enable(gl.STENCIL_TEST);
+
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clearDepth(1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 
     // gl.depthMask(false);
 

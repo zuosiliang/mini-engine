@@ -7,6 +7,7 @@ import MeshBasicMaterial from "./materials/MeshBasicMaterial";
 import PhongShader from "./shaders/PhongShader";
 import BasicShader from "./shaders/BasicShader";
 import { vec3, mat4 } from "gl-matrix";
+import { v4 } from "uuid";
 
 class Mesh {
   geometry: Geometry;
@@ -14,10 +15,12 @@ class Mesh {
   renderer: Renderer;
   shaderProgram: WebGLProgram | null | undefined;
   shader: Shader | undefined;
+  id: string;
   constructor(geometry: Geometry, material: Material) {
     this.geometry = geometry;
     this.material = material;
     this.renderer = window.renderer;
+    this.id = v4();
   }
 
   private createShaderProgram() {
@@ -72,6 +75,7 @@ class Mesh {
     const { geometry } = this;
 
     const vertexCount = geometry.buffers.indices.data.length;
+
     gl.drawElements(gl.TRIANGLES, vertexCount, gl.UNSIGNED_SHORT, 0);
   }
 }
