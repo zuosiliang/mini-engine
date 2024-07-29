@@ -1,16 +1,25 @@
 import Camera from "../Camera";
-import Vector2 from "../math/Vector2";
 import Spherical from "../math/Spherical";
-import Vector3 from "../math/Vector3";
-import Quaternion from "../math/Quaternion";
+import { vec2, vec3 } from "gl-matrix";
+
+const convertSphericalToVec3 = (s) => {
+  const { radius, phi, theta } = s;
+  const sinPhiRadius = Math.sin(phi) * radius;
+
+  const x = sinPhiRadius * Math.sin(theta);
+  const y = Math.cos(phi) * radius;
+  const z = sinPhiRadius * Math.cos(theta);
+
+  return vec3.fromValues(x, y, z);
+};
 
 class OrbitControl {
   camera: Camera;
   canvas: HTMLCanvasElement;
-  rotateStart: Vector2;
-  rotateEnd: Vector2;
-  rotateDelta: Vector2;
-  target: { x: number; y: number; z: number };
+  rotateStart: vec2;
+  rotateEnd: vec2;
+  rotateDelta: vec2;
+  target: vec3;
   rotateSpeed: number;
   sphericalDelta: Spherical;
   spherical: Spherical;
@@ -18,36 +27,35 @@ class OrbitControl {
   constructor(camera: Camera, canvas: HTMLCanvasElement) {
     this.camera = camera;
     this.canvas = canvas;
-    this.rotateStart = new Vector2();
-    this.rotateEnd = new Vector2();
+    this.rotateStart = vec2.create();
+    this.rotateEnd = vec2.create();
 
-    this.rotateDelta = new Vector2();
-    this.target = new Vector3();
+    this.rotateDelta = vec2.create();
+    this.target = vec3.create();
     this.rotateSpeed = 1;
     this.spherical = new Spherical();
     this.sphericalDelta = new Spherical();
 
     this.onMouseDown = (event) => {
-      this.rotateStart.set(event.clientX, event.clientY);
+      vec2.set(this.rotateStart, event.clientX, event.clientY);
 
       this.canvas.addEventListener("mousemove", this.onMouseMove);
       this.canvas.addEventListener("mouseup", this.onMouseUp);
     };
 
     this.onMouseMove = (event) => {
-      this.rotateEnd.set(event.clientX, event.clientY);
+      vec2.set(this.rotateEnd, event.clientX, event.clientY);
 
-      this.rotateDelta
-        .subVectors(this.rotateEnd, this.rotateStart)
-        .multiplyScalar(this.rotateSpeed);
+      vec2.subtract(this.rotateDelta, this.rotateEnd, this.rotateStart);
+      vec2.scale(this.rotateDelta, this.rotateDelta, this.rotateSpeed);
 
       this.sphericalDelta.theta -=
-        (2 * Math.PI * this.rotateDelta.x) / this.canvas.clientHeight;
+        (2 * Math.PI * this.rotateDelta[0]) / this.canvas.clientHeight;
 
       this.sphericalDelta.phi -=
-        (2 * Math.PI * this.rotateDelta.y) / this.canvas.clientHeight;
+        (2 * Math.PI * this.rotateDelta[1]) / this.canvas.clientHeight;
 
-      this.rotateStart.copy(this.rotateEnd);
+      vec2.copy(this.rotateStart, this.rotateEnd);
 
       this.update();
     };
@@ -68,12 +76,11 @@ class OrbitControl {
   }
 
   update() {
-    const offset = new Vector3();
-
     const position = this.camera.position;
-    const positionV3 = new Vector3(position[0], position[1], position[2]);
 
-    offset.copy(positionV3).sub(this.target);
+    let offset = vec3.create();
+
+    vec3.subtract(offset, position, this.target);
 
     // angle from z-axis around y-axis
     this.spherical.setFromVector3(offset);
@@ -89,15 +96,14 @@ class OrbitControl {
       Math.min(Math.PI - EPS, this.spherical.phi),
     );
 
-    offset.setFromSpherical(this.spherical);
+    offset = convertSphericalToVec3(this.spherical);
 
-    positionV3.copy(this.target).add(offset);
-
+    const newPosition = vec3.add(vec3.create(), this.target, offset);
     // scope.object.lookAt(scope.target);
 
     this.sphericalDelta = new Spherical();
 
-    this.camera.setPosition(positionV3.x, positionV3.y, positionV3.z);
+    this.camera.setPosition(newPosition[0], newPosition[1], newPosition[2]);
   }
 }
 

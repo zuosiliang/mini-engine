@@ -8,8 +8,9 @@ import PhongShader from "./shaders/PhongShader";
 import BasicShader from "./shaders/BasicShader";
 import { vec3, mat4 } from "gl-matrix";
 import { v4 } from "uuid";
+import Object3D from "./Object3D";
 
-class Mesh {
+class Mesh extends Object3D {
   geometry: Geometry;
   material: Material;
   renderer: Renderer;
@@ -17,6 +18,7 @@ class Mesh {
   shader: Shader | undefined;
   id: string;
   constructor(geometry: Geometry, material: Material) {
+    super();
     this.geometry = geometry;
     this.material = material;
     this.renderer = window.renderer;
@@ -47,9 +49,9 @@ class Mesh {
     const modelMatrix = mat4.create();
     mat4.fromRotationTranslationScale(
       modelMatrix,
-      geometry.rotation,
-      geometry.position,
-      geometry.scale,
+      this.rotation,
+      this.position,
+      this.scale,
     );
 
     const normalMatrix = mat4.create();

@@ -27,7 +27,7 @@ class Spherical {
   }
 
   setFromVector3(v) {
-    return this.setFromCartesianCoords(v.x, v.y, v.z);
+    return this.setFromCartesianCoords(v[0], v[1], v[2]);
   }
 
   private clamp(value, min, max) {
@@ -46,10 +46,6 @@ class Spherical {
     }
 
     return this;
-  }
-
-  clone() {
-    return new this.constructor().copy(this);
   }
 }
 

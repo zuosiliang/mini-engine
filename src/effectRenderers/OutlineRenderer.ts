@@ -1,6 +1,4 @@
-import Renderer from "../Renderer";
 import Mesh from "../Mesh";
-import BasicShader from "../shaders/BasicShader";
 import MeshBasicMaterial from "../materials/MeshBasicMaterial";
 
 class OutlineRenderer {
@@ -17,7 +15,6 @@ class OutlineRenderer {
 
   updateSelectedObjects(selectedObjects) {
     const { world } = this.renderer;
-    console.log("updateSelectedObjects", selectedObjects);
     this.selectedObjects = selectedObjects;
 
     const modifiedWorld = [];
@@ -27,11 +24,17 @@ class OutlineRenderer {
 
       if (this.selectedObjects.includes(mesh.id)) {
         const outlineMesh = new Mesh(
-          mesh.geometry.clone(),
+          mesh.geometry,
           new MeshBasicMaterial({ color: [0, 0.4, 1] }),
         );
 
-        outlineMesh.geometry.setScale(1.05, 1.05, 1.05);
+        outlineMesh.setPosition(
+          mesh.position[0],
+          mesh.position[1],
+          mesh.position[2],
+        );
+        outlineMesh.setRotation(mesh.rotation);
+        outlineMesh.setScale(1.05, 1.05, 1.05);
 
         pair.outlineMesh = outlineMesh;
       }

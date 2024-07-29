@@ -1,4 +1,3 @@
-import Object3D from "./Object3D";
 import Renderer from "./Renderer";
 import { vec3, quat } from "gl-matrix";
 import Shader from "./Shader";
@@ -14,12 +13,11 @@ type AttributeBuffer = Partial<
   >
 >;
 
-abstract class Geometry extends Object3D {
+abstract class Geometry {
   buffers: AttributeBuffer | undefined;
   renderer: Renderer;
   shader: Shader | undefined;
-  constructor(position?: vec3, rotation?: vec3, scale?: quat) {
-    super(position, rotation, scale);
+  constructor() {
     this.renderer = window.renderer;
   }
 

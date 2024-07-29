@@ -5,7 +5,7 @@ class Object3D {
   position: vec3;
   rotation: quat;
   scale: vec3;
-  constructor(position?: vec3, rotation?: vec3, scale?: quat) {
+  constructor(position?: vec3, rotation?: quat, scale?: vec3) {
     this.position = position ?? vec3.create();
     this.scale = scale ?? vec3.fromValues(1, 1, 1);
     this.rotation = rotation ?? quat.create();
@@ -25,6 +25,10 @@ class Object3D {
 
   setScale(x: number, y: number, z: number) {
     vec3.set(this.scale, x, y, z);
+  }
+
+  setRotation(rotation: quat) {
+    this.rotation = rotation;
   }
 }
 

@@ -1,10 +1,9 @@
-import { vec3, quat } from "gl-matrix";
 import Geometry from "./Geometry";
 import Shader from "./Shader";
 
 class Box extends Geometry {
-  constructor(position: vec3, rotation: vec3, scale: quat) {
-    super(position, rotation, scale);
+  constructor() {
+    super();
     this.initBuffers();
   }
 
@@ -355,7 +354,7 @@ class Box extends Geometry {
   }
 
   clone() {
-    return new Box([...this.position], [...this.rotation], [...this.scale]);
+    return new Box();
   }
 }
 
