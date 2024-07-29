@@ -280,12 +280,23 @@ class Box extends Geometry {
 
   updateShader(shader: Shader) {
     this.shader = shader;
+    this.bindVao();
   }
 
   bind() {
     const { gl } = this.renderer;
+
+    gl.bindVertexArray(this.vao);
+  }
+
+  private bindVao() {
+    const { gl } = this.renderer;
     const { buffers, shader } = this;
     const { shaderProgram } = shader;
+
+    const vao = gl.createVertexArray();
+    gl.bindVertexArray(vao);
+    this.vao = vao;
     const vertexPosition = gl.getAttribLocation(
       shaderProgram,
       "aVertexPosition",
@@ -351,6 +362,8 @@ class Box extends Geometry {
     }
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices.buffer);
+
+    gl.bindVertexArray(null);
   }
 
   clone() {
