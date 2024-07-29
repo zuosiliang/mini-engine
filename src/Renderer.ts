@@ -1,5 +1,5 @@
 import World from "./World";
-import Camera from "./Camera";
+import Camera from "./cameras/PerspectiveCamera";
 import Light from "./Light";
 import Skybox from "./Skybox";
 import LoadingManager from "./loaders/LoadingManager";
@@ -37,12 +37,6 @@ class Renderer {
     this.canvas.height = window.innerHeight;
     this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
 
-    window.addEventListener("resize", () => {
-      this.canvas.width = window.innerWidth;
-      this.canvas.height = window.innerHeight;
-      this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
-    });
-
     window.renderer = this;
     window.loadingManager = new LoadingManager();
 
@@ -60,6 +54,12 @@ class Renderer {
       MeshPhongMaterial: null,
       MeshBasicMaterial: null,
     };
+  }
+
+  resize(w: number, h: number) {
+    this.canvas.width = w;
+    this.canvas.height = h;
+    this.gl.viewport(0, 0, w, h);
   }
 
   updateCamera(newCamera: Camera) {

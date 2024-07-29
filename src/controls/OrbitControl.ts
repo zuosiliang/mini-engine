@@ -1,4 +1,4 @@
-import Camera from "../Camera";
+import Camera from "../cameras/PerspectiveCamera";
 import Spherical from "../math/Spherical";
 import { vec2, vec3 } from "gl-matrix";
 

@@ -1,4 +1,4 @@
-import Camera from "./Camera";
+import Camera from "./cameras/PerspectiveCamera";
 import Renderer from "./Renderer";
 import Box from "./Box";
 import Mesh from "./Mesh";
@@ -75,6 +75,12 @@ const main = () => {
     0.1,
     100.0,
   );
+
+  window.addEventListener("resize", () => {
+    camera.setAspect(window.innerWidth / window.innerHeight);
+    camera.updateMatrix();
+    renderer.resize(window.innerWidth, window.innerHeight);
+  });
 
   camera.setPosition(0, 0, 10);
   // camera.updateMatrix();

@@ -1,4 +1,4 @@
-import Camera from "../Camera";
+import Camera from "../cameras/PerspectiveCamera";
 import { mat4 } from "gl-matrix";
 
 class BrowseControl {

@@ -1,4 +1,4 @@
-import Camera from "./Camera";
+import Camera from "./cameras/PerspectiveCamera";
 import Renderer from "./Renderer";
 import Light from "./Light";
 import Mesh from "./Mesh";

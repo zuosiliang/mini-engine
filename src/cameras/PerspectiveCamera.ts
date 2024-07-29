@@ -1,6 +1,6 @@
 import { mat4, vec3 } from "gl-matrix";
 
-class Camera {
+class PerspectiveCamera {
   fov: number;
   aspect: number;
   near: number;
@@ -33,6 +33,10 @@ class Camera {
     vec3.set(this.position, x, y, z);
   }
 
+  setAspect(aspect: number) {
+    this.aspect = aspect;
+  }
+
   updateMatrix() {
     // Initialize the projection matrix
     const projectionMatrix = mat4.create();
@@ -56,4 +60,4 @@ class Camera {
   }
 }
 
-export default Camera;
+export default PerspectiveCamera;
