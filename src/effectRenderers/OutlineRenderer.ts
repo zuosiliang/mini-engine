@@ -6,11 +6,12 @@ class OutlineRenderer {
   gl: any;
   constructor(configs) {
     const { renderer, outlineColor, outlineSize } = configs;
-    const { world, gl } = renderer;
+    const { world, gl, skybox } = renderer;
 
     this.selectedObjects = [];
     this.renderer = renderer;
     this.gl = gl;
+    this.skybox = skybox;
   }
 
   updateSelectedObjects(selectedObjects) {
@@ -45,7 +46,7 @@ class OutlineRenderer {
   }
 
   render() {
-    const { gl } = this;
+    const { gl, skybox } = this;
     gl.enable(gl.STENCIL_TEST);
 
     gl.enable(gl.DEPTH_TEST);
@@ -55,6 +56,9 @@ class OutlineRenderer {
     gl.clearStencil(0);
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+
+    skybox.render();
+
     this.modifiedMorld.forEach((pair) => {
       if (pair.outlineMesh) {
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);

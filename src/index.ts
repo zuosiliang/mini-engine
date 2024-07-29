@@ -70,14 +70,14 @@ const main = () => {
   camera.setPosition(0, 0, 10);
   // camera.updateMatrix();
 
-  // const skybox = new Skybox([
-  //   "../right1.jpg",
-  //   "../left1.jpg",
-  //   "../top1.jpg",
-  //   "../bottom1.jpg",
-  //   "../back1.jpg",
-  //   "../front1.jpg",
-  // ]);
+  const skybox = new Skybox([
+    "../right1.jpg",
+    "../left1.jpg",
+    "../top1.jpg",
+    "../bottom1.jpg",
+    "../back1.jpg",
+    "../front1.jpg",
+  ]);
 
   const picker = new GPUPicker({ renderer, canvas: canvasDom });
   const controls = new OrbitControl(camera, canvasDom);
@@ -90,7 +90,7 @@ const main = () => {
   world.add(light2);
   world.add(light3);
   world.add(light4);
-  // world.add(skybox);
+  world.add(skybox);
 
   // const controls = new BrowseControl(canvasDom, camera);
 
@@ -114,10 +114,10 @@ const main = () => {
 
     const selected = picker.pick(pointer) ?? [];
     camera.updateMatrix();
-    // controls.update();
     outlineRenderer.updateSelectedObjects(selected);
     outlineRenderer.render();
 
+    // renderer.render();
     requestAnimationFrame(r);
   };
   requestAnimationFrame(r);

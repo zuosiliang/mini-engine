@@ -77,12 +77,12 @@ class Renderer {
     gl.clearDepth(1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 
-    // gl.depthMask(false);
+    gl.depthMask(false);
 
-    // skybox.render();
+    skybox.render();
+    gl.depthMask(true);
+
     this.world.render();
-
-    // gl.depthMask(true);
 
     // });
   }

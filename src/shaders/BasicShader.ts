@@ -1,31 +1,34 @@
 // Vertex shader program
-const vsSource = `
-attribute vec4 aVertexPosition;
+const vsSource = `#version 300 es
+in vec4 aVertexPosition;
+in vec2 aTextureCoord;
 uniform mat4 uModelMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
-attribute vec2 aTextureCoord;
-varying highp vec2 vTextureCoord;
+
+out highp vec2 vTextureCoord;
 
 void main(void) {
     gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * aVertexPosition;
     vTextureCoord = aTextureCoord;
-    }
+}
 `;
 
-const fsSource = `
+const fsSource = `#version 300 es
 precision mediump float;
 
 uniform bool uUseTexture;
 uniform vec3 uColor;
 uniform sampler2D u_texture;
-varying highp vec2 vTextureCoord;
+
+in highp vec2 vTextureCoord;
+out vec4 outColor;
 
 void main(void) {
     if (uUseTexture) {
-        gl_FragColor = texture2D(u_texture, vTextureCoord);
+        outColor = texture(u_texture, vTextureCoord);
     } else {
-        gl_FragColor = vec4(uColor, 1.0);
+        outColor = vec4(uColor, 1.0);
     }
 }
 `;
