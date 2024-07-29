@@ -3,6 +3,12 @@ import Camera from "./Camera";
 import Light from "./Light";
 import Skybox from "./Skybox";
 import LoadingManager from "./loaders/LoadingManager";
+import Shader from "./Shader";
+
+export enum MaterialType {
+  MeshPhongMaterial = "MeshPhongMaterial",
+  MeshBasicMaterial = "MeshBasicMaterial",
+}
 
 class Renderer {
   gl!: WebGL2RenderingContext;
@@ -11,6 +17,7 @@ class Renderer {
   camera: Camera;
   lights: Light[];
   skybox: Skybox | undefined;
+  shaders: Record<MaterialType, null | Shader>;
 
   constructor(canvas?: HTMLCanvasElement) {
     if (canvas) {
@@ -49,6 +56,10 @@ class Renderer {
     );
 
     this.lights = [];
+    this.shaders = {
+      MeshPhongMaterial: null,
+      MeshBasicMaterial: null,
+    };
   }
 
   updateCamera(newCamera: Camera) {

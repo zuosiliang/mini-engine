@@ -9,6 +9,7 @@ import BasicShader from "./shaders/BasicShader";
 import { vec3, mat4 } from "gl-matrix";
 import { v4 } from "uuid";
 import Object3D from "./Object3D";
+import { MaterialType } from "./Renderer";
 
 class Mesh extends Object3D {
   geometry: Geometry;
@@ -26,17 +27,31 @@ class Mesh extends Object3D {
   }
 
   private createShaderProgram() {
-    const { lights } = this.renderer;
+    const { lights, shaders } = this.renderer;
 
     if (this.material instanceof MeshPhongMaterial) {
-      const shader = new Shader(PhongShader.vsSource, PhongShader.fsSource, {
-        pointLight: lights.length,
-      });
-      this.shader = shader;
+      const existingShader = shaders[MaterialType.MeshPhongMaterial];
+
+      if (!existingShader) {
+        const shader = new Shader(PhongShader.vsSource, PhongShader.fsSource, {
+          pointLight: lights.length,
+        });
+        shaders[MaterialType.MeshPhongMaterial] = shader;
+        this.shader = shader;
+      } else {
+        this.shader = existingShader;
+      }
     }
     if (this.material instanceof MeshBasicMaterial) {
-      const shader = new Shader(BasicShader.vsSource, BasicShader.fsSource);
-      this.shader = shader;
+      const existingShader = shaders[MaterialType.MeshBasicMaterial];
+
+      if (!existingShader) {
+        const shader = new Shader(BasicShader.vsSource, BasicShader.fsSource);
+        shaders[MaterialType.MeshBasicMaterial] = shader;
+        this.shader = shader;
+      } else {
+        this.shader = existingShader;
+      }
     }
     this.geometry.updateShader(this.shader);
     this.material.updateShader(this.shader);

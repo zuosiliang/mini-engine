@@ -19,6 +19,7 @@ const main = () => {
   const { world } = renderer;
   const box = new Box();
 
+  const plane = new Plane();
   const light1 = new PointLight([0, 0, -3], [1, 1, 1], 1.0, 0.09, 0.032);
   const light2 = new PointLight([0, 0, 0], [1, 1, 1], 1.0, 0.09, 0.032);
   const light3 = new PointLight([-5, -5, -5], [1, 1, 1], 1.0, 0.09, 0.032);
@@ -29,6 +30,14 @@ const main = () => {
     "../TilesCeramicSquareLarge001_COL_1K.jpg",
   );
 
+  const meshPlane = new Mesh(
+    plane,
+    new MeshBasicMaterial({ color: [1, 0, 0] }),
+  );
+
+  meshPlane.setPosition(0, 0, -2);
+  meshPlane.setScale(1, 1, 1);
+  meshPlane.rotateX(Math.PI / 2);
   const mesh = new Mesh(box, new MeshBasicMaterial({ color: [0, 0.4, 1] }));
 
   const mesh2 = new Mesh(
@@ -84,7 +93,7 @@ const main = () => {
   world.add(mesh);
   world.add(mesh2);
   world.add(mesh3);
-  // world.add(meshplane);
+  world.add(meshPlane);
   world.add(camera);
   world.add(light1);
   world.add(light2);
