@@ -1,11 +1,9 @@
-import Material from "./Material";
+import Material from "../materials/Material";
 import Renderer from "./Renderer";
-import Geometry from "./Geometry";
+import Geometry from "../geometries/Geometry";
 import Shader from "./Shader";
-import MeshPhongMaterial from "./materials/MeshPhongMaterial";
-import MeshBasicMaterial from "./materials/MeshBasicMaterial";
-import PhongShader from "./shaders/PhongShader";
-import BasicShader from "./shaders/BasicShader";
+import PhongShader from "../shaders/PhongShader";
+import BasicShader from "../shaders/BasicShader";
 import { vec3, mat4 } from "gl-matrix";
 import { v4 } from "uuid";
 import Object3D from "./Object3D";
@@ -18,18 +16,20 @@ class Mesh extends Object3D {
   shaderProgram: WebGLProgram | null | undefined;
   shader: Shader | undefined;
   id: string;
+  materialType: MaterialType;
   constructor(geometry: Geometry, material: Material) {
     super();
     this.geometry = geometry;
     this.material = material;
     this.renderer = window.renderer;
     this.id = v4();
+    this.materialType = material.constructor.name;
   }
 
   private createShaderProgram() {
     const { lights, shaders } = this.renderer;
 
-    if (this.material instanceof MeshPhongMaterial) {
+    if (this.materialType === MaterialType.MeshPhongMaterial) {
       const existingShader = shaders[MaterialType.MeshPhongMaterial];
 
       if (!existingShader) {
@@ -38,23 +38,29 @@ class Mesh extends Object3D {
         });
         shaders[MaterialType.MeshPhongMaterial] = shader;
         this.shader = shader;
+        this.shader.updateAttributes(["positions", "normals", "uvs"]);
       } else {
         this.shader = existingShader;
       }
     }
-    if (this.material instanceof MeshBasicMaterial) {
+    if (this.materialType === MaterialType.MeshBasicMaterial) {
       const existingShader = shaders[MaterialType.MeshBasicMaterial];
 
       if (!existingShader) {
         const shader = new Shader(BasicShader.vsSource, BasicShader.fsSource);
         shaders[MaterialType.MeshBasicMaterial] = shader;
         this.shader = shader;
+        this.shader.updateAttributes(["positions"]);
       } else {
         this.shader = existingShader;
       }
     }
     this.geometry.updateShader(this.shader);
     this.material.updateShader(this.shader);
+
+    if (!this.geometry.vao[this.materialType]) {
+      this.geometry.createVao(this.materialType);
+    }
   }
 
   render() {
@@ -81,7 +87,7 @@ class Mesh extends Object3D {
     this.shader.setMat4("uNormalMatrix", normalMatrix);
     this.shader.setVec3("uViewWorldPosition", camera.position);
 
-    geometry.bind();
+    geometry.bindVao(this.materialType);
     material.bind();
 
     this.draw();

@@ -1,5 +1,5 @@
-import Mesh from "./Mesh";
-import MeshBasicMaterial from "./materials/MeshBasicMaterial";
+import Mesh from "../core/Mesh";
+import MeshBasicMaterial from "../materials/MeshBasicMaterial";
 
 class GPUPicker {
   gl: any;

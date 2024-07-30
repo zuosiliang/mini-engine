@@ -1,17 +1,17 @@
 import Camera from "./cameras/PerspectiveCamera";
-import Renderer from "./Renderer";
-import Box from "./Box";
-import Mesh from "./Mesh";
+import Renderer from "./core/Renderer";
+import Box from "./geometries/Box";
+import Mesh from "./core/Mesh";
 import MeshPhongMaterial from "./materials/MeshPhongMaterial";
 import MeshBasicMaterial from "./materials/MeshBasicMaterial";
-import PointLight from "./PointLight";
-import Skybox from "./Skybox";
-import Plane from "./Plane";
+import PointLight from "./lights/PointLight";
+import Skybox from "./extras/Skybox";
+import Plane from "./geometries/Plane";
 import BrowseControl from "./controls/BrowseControl";
 import OrbitControl from "./controls/OrbitControl";
 import TextureLoader from "./loaders/TextureLoader";
 import OutlineRenderer from "./effectRenderers/OutlineRenderer";
-import GPUPicker from "./GPUPicker";
+import GPUPicker from "./extras/GPUPicker";
 
 const main = () => {
   const canvasDom = document.getElementById("glCanvas");
@@ -94,7 +94,7 @@ const main = () => {
     "../front1.jpg",
   ]);
 
-  const picker = new GPUPicker({ renderer, canvas: canvasDom });
+  // const picker = new GPUPicker({ renderer, canvas: canvasDom });
   const controls = new OrbitControl(camera, canvasDom);
   world.add(mesh);
   world.add(mesh2);
@@ -109,7 +109,7 @@ const main = () => {
 
   // const controls = new BrowseControl(canvasDom, camera);
 
-  const outlineRenderer = new OutlineRenderer({ renderer });
+  // const outlineRenderer = new OutlineRenderer({ renderer });
 
   const pointer = { x: null, y: null };
 
@@ -127,12 +127,12 @@ const main = () => {
     // const cameraPosition = [Math.cos(time * 0.1), 0, Math.sin(time * 0.1)];
     // camera.setPosition(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
 
-    const selected = picker.pick(pointer) ?? [];
+    // const selected = picker.pick(pointer) ?? [];
     camera.updateMatrix();
-    outlineRenderer.updateSelectedObjects(selected);
-    outlineRenderer.render();
+    // outlineRenderer.updateSelectedObjects(selected);
+    // outlineRenderer.render();
 
-    // renderer.render();
+    renderer.render();
     requestAnimationFrame(r);
   };
   requestAnimationFrame(r);

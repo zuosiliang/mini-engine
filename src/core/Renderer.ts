@@ -1,8 +1,8 @@
 import World from "./World";
-import Camera from "./cameras/PerspectiveCamera";
-import Light from "./Light";
-import Skybox from "./Skybox";
-import LoadingManager from "./loaders/LoadingManager";
+import Camera from "../cameras/PerspectiveCamera";
+import Light from "../lights/Light";
+import Skybox from "../extras/Skybox";
+import LoadingManager from "../loaders/LoadingManager";
 import Shader from "./Shader";
 
 export enum MaterialType {
@@ -35,7 +35,7 @@ class Renderer {
 
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
-    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
+    this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
 
     window.renderer = this;
     window.loadingManager = new LoadingManager();

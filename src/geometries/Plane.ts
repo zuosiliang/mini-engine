@@ -1,5 +1,5 @@
 import Geometry from "./Geometry";
-import Shader from "./Shader";
+import Shader from "../core/Shader";
 
 class Plane extends Geometry {
   clone() {
@@ -39,6 +39,8 @@ class Plane extends Geometry {
       gl.STATIC_DRAW,
     );
 
+    this.vao = {};
+
     this.buffers = {
       positions: { buffer: positionBuffer, data: positions },
       normals: { buffer: normalBuffer, data: normals },
@@ -48,71 +50,59 @@ class Plane extends Geometry {
 
   updateShader(shader: Shader) {
     this.shader = shader;
-    this.bindVao();
   }
 
-  bind() {
+  bindVao(materialType) {
     const { gl } = this.renderer;
-
-    gl.bindVertexArray(this.vao);
+    gl.bindVertexArray(this.vao[materialType]);
   }
 
-  private bindVao() {
+  createVao(materialType) {
     const { gl } = this.renderer;
     const { buffers, shader } = this;
-    const { shaderProgram } = shader;
-
-    const vao = gl.createVertexArray();
-    gl.bindVertexArray(vao);
-    this.vao = vao;
-    const vertexPosition = gl.getAttribLocation(
-      shaderProgram,
-      "aVertexPosition",
-    );
-
-    const vertexNormal = gl.getAttribLocation(shaderProgram, "aVertexNormal");
 
     if (!buffers) {
       throw new Error("buffers went wrong");
     }
-    {
-      const numComponents = 3;
-      const type = gl.FLOAT;
-      const normalize = false;
-      const stride = 0;
-      const offset = 0;
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.positions.buffer);
-      gl.vertexAttribPointer(
-        vertexPosition,
-        numComponents,
-        type,
-        normalize,
-        stride,
-        offset,
-      );
-      gl.enableVertexAttribArray(vertexPosition);
-    }
+    const { shaderProgram } = shader;
 
-    {
-      const numComponents = 3;
-      const type = gl.FLOAT;
-      const normalize = false;
-      const stride = 0;
-      const offset = 0;
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normals.buffer);
-      gl.vertexAttribPointer(
-        vertexNormal,
-        numComponents,
-        type,
-        normalize,
-        stride,
-        offset,
-      );
-      gl.enableVertexAttribArray(vertexNormal);
-    }
+    const vao = gl.createVertexArray();
+    gl.bindVertexArray(vao);
+    this.vao[materialType] = vao;
+
+    this.shader.attributeTypes.forEach((attributeType) => {
+      const attributeTypeVariableMap = {
+        positions: "aVertexPosition",
+        uvs: "aTextureCoord",
+        normals: "aVertexNormal",
+      };
+      const attribute = attributeTypeVariableMap[attributeType];
+      const attributeLocation = gl.getAttribLocation(shaderProgram, attribute);
+
+      if (attributeLocation !== -1) {
+        let numComponents;
+        if (attributeType === "positions") numComponents = 3;
+        else if (attributeType === "normals") numComponents = 3;
+        else if (attributeType === "uvs") numComponents = 2;
+
+        const type = gl.FLOAT;
+        const normalize = false;
+        const stride = 0;
+        const offset = 0;
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffers[attributeType].buffer);
+        gl.vertexAttribPointer(
+          attributeLocation,
+          numComponents,
+          type,
+          normalize,
+          stride,
+          offset,
+        );
+        gl.enableVertexAttribArray(attributeLocation);
+      }
+    });
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices.buffer);
-
     gl.bindVertexArray(null);
   }
 }

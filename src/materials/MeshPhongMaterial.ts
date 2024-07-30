@@ -1,5 +1,5 @@
-import Material from "../Material";
-import Shader from "../Shader";
+import Material from "./Material";
+import Shader from "../core/Shader";
 import Texture from "../textures/Texture";
 
 class MeshPhongMaterial extends Material {

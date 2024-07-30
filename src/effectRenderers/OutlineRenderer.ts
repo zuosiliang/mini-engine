@@ -1,4 +1,4 @@
-import Mesh from "../Mesh";
+import Mesh from "../core/Mesh";
 import MeshBasicMaterial from "../materials/MeshBasicMaterial";
 
 class OutlineRenderer {

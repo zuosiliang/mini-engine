@@ -1,5 +1,5 @@
-import Renderer from "./Renderer";
-import Shader from "./Shader";
+import Renderer from "../core/Renderer";
+import Shader from "../core/Shader";
 
 abstract class Material {
   shader: Shader | undefined;

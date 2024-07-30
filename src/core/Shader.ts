@@ -5,8 +5,11 @@ type DefineConfig = {
   pointLight?: number;
 };
 
+type AttributeType = "positions" | "normals" | "uvs";
+
 class Shader {
   uniforms: Record<string, mat4 | mat3 | vec3 | vec4 | number>;
+  attributeTypes: AttributeType[];
   vsSource: string;
   fsSource: string;
   renderer: Renderer;
@@ -23,6 +26,11 @@ class Shader {
 
     this.initShaderProgram(this.vsSource, this.fsSource);
     this.uniforms = {};
+    this.attributeTypes = [];
+  }
+
+  updateAttributes(attributeTypes: AttributeType[]) {
+    this.attributeTypes = attributeTypes;
   }
 
   setMat4(name: string, value: mat4) {

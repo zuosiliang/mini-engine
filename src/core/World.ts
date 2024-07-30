@@ -1,8 +1,8 @@
-import Camera from "./cameras/PerspectiveCamera";
+import Camera from "../cameras/PerspectiveCamera";
 import Renderer from "./Renderer";
-import Light from "./Light";
+import Light from "../lights/Light";
 import Mesh from "./Mesh";
-import Skybox from "./Skybox";
+import Skybox from "../extras/Skybox";
 
 class World {
   objs: Mesh[];

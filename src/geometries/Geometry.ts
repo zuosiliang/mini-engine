@@ -1,6 +1,6 @@
-import Renderer from "./Renderer";
+import Renderer from "../core/Renderer";
 import { vec3, quat } from "gl-matrix";
-import Shader from "./Shader";
+import Shader from "../core/Shader";
 type AttributeType = "positions" | "normals" | "indices";
 
 type AttributeBuffer = Partial<

@@ -1,5 +1,5 @@
-import Material from "../Material";
-import Shader from "../Shader";
+import Material from "./Material";
+import Shader from "../core/Shader";
 import Texture from "../textures/Texture";
 class MeshBasicMaterial extends Material {
   color: [number, number, number];
