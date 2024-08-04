@@ -1,69 +1,74 @@
 import Material from "./Material";
-import Shader from "../core/Shader";
 import Texture from "../textures/Texture";
 
-class MeshPhongMaterial extends Material {
-  color: [number, number, number];
-  specular: [number, number, number];
+interface MeshPhongMaterialProps {
+  color: ThreeNumbers;
+  specular: ThreeNumbers;
   shininess: number;
-  colorMap: Texture;
+  colorMap?: Texture;
+}
 
-  constructor(configs) {
-    super();
-    const { color, specular, shininess, colorMap } = configs;
-    this.color = color;
-    this.specular = specular;
-    this.shininess = shininess;
-    this.colorMap = colorMap;
-  }
+class MeshPhongMaterial extends Material {
+  color: ThreeNumbers = [1, 1, 1];
+  specular: ThreeNumbers = [1, 1, 1];
+  shininess: number = 300;
+  colorMap: Texture | null = null;
 
-  updateShader(shader: Shader): void {
-    this.shader = shader;
+  constructor(props: MeshPhongMaterialProps) {
+    const { color, specular, shininess, colorMap } = props;
+    super({ color, colorMap });
+    this.color = color ?? this.color;
+    this.specular = specular ?? this.specular;
+    this.shininess = shininess ?? this.shininess;
+    this.colorMap = colorMap ?? this.colorMap;
   }
 
   bind() {
-    const { shader } = this;
-    const { gl } = this.renderer;
+    const {
+      shader,
+      renderer: { gl },
+    } = this;
 
-    if (shader) {
-      const lightConfigs = this.calcLights();
-
-      if (this.colorMap) {
-        shader.setInt("uUseTexture", 1);
-        shader.setInt("u_texture", 0);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.colorMap.texture);
-      } else {
-        shader.setInt("uUseTexture", 0);
-        shader.setVec3("uMaterialColor", this.color);
-      }
-      shader.setVec3("uMaterialSpecular", this.specular);
-      shader.setFloat("uMaterialShininess", this.shininess);
-
-      shader.setVec3(
-        "uLightPositions",
-        new Float32Array(lightConfigs.lightPositions),
-      );
-      shader.setVec3(
-        "uLightColors",
-        new Float32Array(lightConfigs.lightColors),
-      );
-      shader.setFloatArr(
-        "uLightConstants",
-        new Float32Array(lightConfigs.lightConstants),
-      );
-      shader.setFloatArr(
-        "uLightLinears",
-        new Float32Array(lightConfigs.lightLinears),
-      );
-      shader.setFloatArr(
-        "uLightQuadratics",
-        new Float32Array(lightConfigs.lightQuadratics),
-      );
+    if (!gl) {
+      throw new Error("the gl context went wrong");
     }
+    if (!shader) {
+      throw new Error("the shader went wrong");
+    }
+    const lightConfigs = this.#calcPointLights();
+
+    if (this.colorMap) {
+      shader.setInt("uUseTexture", 1);
+      shader.setInt("u_texture", 0);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, this.colorMap.webglTexture);
+    } else {
+      shader.setInt("uUseTexture", 0);
+      shader.setVec3("uMaterialColor", this.color);
+    }
+    shader.setVec3("uMaterialSpecular", this.specular);
+    shader.setFloat("uMaterialShininess", this.shininess);
+
+    shader.setVec3(
+      "uLightPositions",
+      new Float32Array(lightConfigs.lightPositions),
+    );
+    shader.setVec3("uLightColors", new Float32Array(lightConfigs.lightColors));
+    shader.setFloatArr(
+      "uLightConstants",
+      new Float32Array(lightConfigs.lightConstants),
+    );
+    shader.setFloatArr(
+      "uLightLinears",
+      new Float32Array(lightConfigs.lightLinears),
+    );
+    shader.setFloatArr(
+      "uLightQuadratics",
+      new Float32Array(lightConfigs.lightQuadratics),
+    );
   }
 
-  private calcLights() {
+  #calcPointLights() {
     const { lights } = this.renderer;
 
     const lightPositions = lights

@@ -1,23 +1,21 @@
 import Mesh from "../core/Mesh";
 import MeshBasicMaterial from "../materials/MeshBasicMaterial";
+import Renderer from "../core/Renderer";
+import World from "../core/World";
 
 class GPUPicker {
-  gl: any;
-  world: any;
-  coloredMeshes: never[];
-  renderTarget: any;
-  constructor(configs) {
-    const { renderer, canvas } = configs;
-    const { gl, world } = renderer;
-
-    this.gl = gl;
-    this.world = world;
-    this.coloredMeshes = [];
-    this.setupFramebuffer();
+  coloredMeshes: Mesh[] = [];
+  renderTarget: WebGLFramebuffer | null = null;
+  renderer: Renderer = new Renderer();
+  constructor() {
+    this.#setupFramebuffer();
   }
 
-  setupFramebuffer() {
-    const { gl } = this;
+  #setupFramebuffer() {
+    const { gl } = this.renderer;
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
+    }
     const framebuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
 
@@ -68,9 +66,15 @@ class GPUPicker {
     this.renderTarget = framebuffer;
   }
 
-  pick(pointer) {
-    const { gl, world } = this;
-    this.renderForPicking();
+  pick(pointer: { x: number; y: number }, world: World) {
+    if (!world) {
+      throw new Error("world can not be empty!");
+    }
+    const { gl } = this.renderer;
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
+    }
+    this.#renderForPicking(world);
     const x = pointer.x;
     const y = pointer.y;
     const pixel = new Uint8Array(4);
@@ -79,28 +83,31 @@ class GPUPicker {
     const id = pixel[0] + pixel[1] * 256 + pixel[2] * 256 * 256;
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-    const selected = [];
-    world.objs.forEach((obj, index) => {
+    const selected: string[] = [];
+    world.meshes.forEach((mesh, index) => {
       if (index == id - 1) {
-        selected.push(obj.id);
+        selected.push(mesh.id);
       }
     });
     return selected;
   }
 
-  renderForPicking() {
-    const { gl, world } = this;
-    const { objs } = world;
+  #renderForPicking(world: World) {
+    const { meshes } = world;
+    const { gl } = this.renderer;
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
+    }
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.renderTarget);
 
     ///如果注释掉这两行，就会永远选中id1
     gl.clearColor(0, 0, 0, 1); // Clear to black
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    const coloredMeshes = [];
+    const coloredMeshes: Mesh[] = [];
 
-    objs.forEach((mesh: Mesh, index: number) => {
-      const color = [
+    meshes.forEach((mesh: Mesh, index: number) => {
+      const color: ThreeNumbers = [
         ((index + 1) & 0xff) / 255,
         (((index + 1) >> 8) & 0xff) / 255,
         (((index + 1) >> 16) & 0xff) / 255,

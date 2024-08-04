@@ -1,17 +1,20 @@
+let loadingManagerInstance: LoadingManager;
+
 class LoadingManager {
-  itemsToLoad: number;
-  itemsLoaded: number;
-  onLoadCallback: (() => void) | null;
+  itemsToLoad: number = 0;
+  itemsLoaded: number = 0;
+  onLoadCallback: (() => void) | null = null;
   onProgressCallback:
     | ((itemsToLoad: number, itemsLoaded: number) => void)
-    | null;
-  onErrorCallback: ((src: string) => void) | null;
+    | null = null;
+  onErrorCallback: ((src: string) => void) | null = null;
   constructor() {
-    this.itemsToLoad = 0;
-    this.itemsLoaded = 0;
-    this.onLoadCallback = null;
-    this.onProgressCallback = null;
-    this.onErrorCallback = null;
+    // Singleton
+    if (loadingManagerInstance) {
+      return loadingManagerInstance;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    loadingManagerInstance = this;
   }
 
   setOnLoad(callback: () => void) {

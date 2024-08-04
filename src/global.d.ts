@@ -1,4 +1,3 @@
-// global.d.ts
-interface Window {
-  renderer: Renderer; // Replace 'any' with the specific type if you know it
-}
+type ThreeNumbers = [number, number, number];
+
+declare module "uuid";

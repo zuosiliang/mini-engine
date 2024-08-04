@@ -1,10 +1,10 @@
 import Material from "../materials/Material";
 import Renderer from "./Renderer";
-import Geometry from "../geometries/Geometry";
+import { Geometry } from "../geometries/Geometry";
 import Shader from "./Shader";
 import PhongShader from "../shaders/PhongShader";
 import BasicShader from "../shaders/BasicShader";
-import { vec3, mat4 } from "gl-matrix";
+import { mat4 } from "gl-matrix";
 import { v4 } from "uuid";
 import Object3D from "./Object3D";
 import { MaterialType } from "./Renderer";
@@ -12,21 +12,19 @@ import { MaterialType } from "./Renderer";
 class Mesh extends Object3D {
   geometry: Geometry;
   material: Material;
-  renderer: Renderer;
-  shaderProgram: WebGLProgram | null | undefined;
-  shader: Shader | undefined;
+  renderer: Renderer = new Renderer();
+  shader: Shader | null = null;
   id: string;
   materialType: MaterialType;
   constructor(geometry: Geometry, material: Material) {
     super();
     this.geometry = geometry;
     this.material = material;
-    this.renderer = window.renderer;
     this.id = v4();
-    this.materialType = material.constructor.name;
+    this.materialType = material.constructor.name as MaterialType;
   }
 
-  private createShaderProgram() {
+  #createShaderProgram() {
     const { lights, shaders } = this.renderer;
 
     if (this.materialType === MaterialType.MeshPhongMaterial) {
@@ -55,6 +53,9 @@ class Mesh extends Object3D {
         this.shader = existingShader;
       }
     }
+    if (!this.shader) {
+      throw new Error("the shader can not be empty");
+    }
     this.geometry.updateShader(this.shader);
     this.material.updateShader(this.shader);
 
@@ -79,7 +80,13 @@ class Mesh extends Object3D {
     mat4.invert(normalMatrix, modelMatrix);
     mat4.transpose(normalMatrix, normalMatrix);
 
-    this.createShaderProgram();
+    this.#createShaderProgram();
+    if (!this.shader) {
+      throw new Error("the shader can not be empty");
+    }
+    if (!camera) {
+      throw new Error("the camera can not be empty");
+    }
     this.shader.use();
     this.shader.setMat4("uViewMatrix", camera.viewMatrix);
     this.shader.setMat4("uProjectionMatrix", camera.projectionMatrix);
@@ -90,13 +97,21 @@ class Mesh extends Object3D {
     geometry.bindVao(this.materialType);
     material.bind();
 
-    this.draw();
+    this.#draw();
   }
 
-  private draw() {
-    const { gl } = this.renderer;
-    const { geometry } = this;
+  #draw() {
+    const {
+      geometry,
+      renderer: { gl },
+    } = this;
 
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
+    }
+    if (!geometry.buffers?.indices) {
+      throw new Error("the indices buffer is empty");
+    }
     const vertexCount = geometry.buffers.indices.data.length;
 
     gl.drawElements(gl.TRIANGLES, vertexCount, gl.UNSIGNED_SHORT, 0);

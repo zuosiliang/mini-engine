@@ -1,15 +1,16 @@
-import Geometry from "./Geometry";
-import Shader from "../core/Shader";
+import { Geometry } from "./Geometry";
 
 class Box extends Geometry {
   constructor() {
     super();
-    this.initBuffers();
+    this.#initBuffers();
   }
 
-  private initBuffers() {
+  #initBuffers() {
     const { gl } = this.renderer;
-
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
+    }
     const positions = [
       -1.0,
       -1.0,
@@ -270,75 +271,12 @@ class Box extends Geometry {
       gl.STATIC_DRAW,
     );
 
-    this.vao = {};
     this.buffers = {
       positions: { buffer: positionBuffer, data: positions },
       normals: { buffer: normalBuffer, data: normals },
       uvs: { buffer: uvBuffer, data: uvs },
       indices: { buffer: indexBuffer, data: indices },
     };
-  }
-
-  updateShader(shader: Shader) {
-    this.shader = shader;
-  }
-
-  bindVao(materialType) {
-    const { gl } = this.renderer;
-    gl.bindVertexArray(this.vao[materialType]);
-  }
-
-  createVao(materialType) {
-    const { gl } = this.renderer;
-    const { buffers, shader } = this;
-
-    if (!buffers) {
-      throw new Error("buffers went wrong");
-    }
-    const { shaderProgram } = shader;
-
-    const vao = gl.createVertexArray();
-    gl.bindVertexArray(vao);
-    this.vao[materialType] = vao;
-
-    this.shader.attributeTypes.forEach((attributeType) => {
-      const attributeTypeVariableMap = {
-        positions: "aVertexPosition",
-        uvs: "aTextureCoord",
-        normals: "aVertexNormal",
-      };
-      const attribute = attributeTypeVariableMap[attributeType];
-      const attributeLocation = gl.getAttribLocation(shaderProgram, attribute);
-
-      if (attributeLocation !== -1) {
-        let numComponents;
-        if (attributeType === "positions") numComponents = 3;
-        else if (attributeType === "normals") numComponents = 3;
-        else if (attributeType === "uvs") numComponents = 2;
-
-        const type = gl.FLOAT;
-        const normalize = false;
-        const stride = 0;
-        const offset = 0;
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffers[attributeType].buffer);
-        gl.vertexAttribPointer(
-          attributeLocation,
-          numComponents,
-          type,
-          normalize,
-          stride,
-          offset,
-        );
-        gl.enableVertexAttribArray(attributeLocation);
-      }
-    });
-
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices.buffer);
-    gl.bindVertexArray(null);
-  }
-
-  clone() {
-    return new Box();
   }
 }
 

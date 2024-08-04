@@ -1,26 +1,25 @@
-import { vec3 } from "gl-matrix";
-import Light from "./Light";
-
-class PointLight extends Light {
+interface PointLightProps {
+  position: ThreeNumbers;
+  color: ThreeNumbers;
   constant: number;
   linear: number;
   quadratic: number;
+}
 
-  constructor(
-    position: vec3,
-    color: [number, number, number],
-    constant: number,
-    linear: number,
-    quadratic: number,
-  ) {
-    super(position, color);
+class PointLight {
+  position: ThreeNumbers = [0, 0, 0];
+  color: ThreeNumbers = [1, 1, 1];
+  constant: number = 1.0;
+  linear: number = 0.09;
+  quadratic: number = 0.032;
 
-    this.constant = constant;
-    this.linear = linear;
-    this.quadratic = quadratic;
-  }
-  setPosition(x: number, y: number, z: number) {
-    vec3.set(this.position, x, y, z);
+  constructor(props: PointLightProps) {
+    const { position, color, constant, linear, quadratic } = props;
+    this.position = position ?? this.position;
+    this.color = color ?? this.color;
+    this.constant = constant ?? this.constant;
+    this.linear = linear ?? this.linear;
+    this.quadratic = quadratic ?? this.quadratic;
   }
 }
 

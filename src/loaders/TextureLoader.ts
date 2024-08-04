@@ -1,24 +1,41 @@
 import LoadingManager from "./LoadingManager";
 import Texture from "../textures/Texture";
+import Renderer from "../core/Renderer";
 
 class TextureLoader {
-  loadingManager: LoadingManager;
-  texture: Texture;
-  constructor() {
-    this.loadingManager = new LoadingManager();
-  }
+  loadingManager: LoadingManager = new LoadingManager();
+  renderer: Renderer = new Renderer();
+  texture: Texture | null = null;
 
-  load(url) {
-    const { gl } = window.renderer;
+  load(url: string) {
+    const { gl } = this.renderer;
+    if (!gl) {
+      throw new Error("The gl context cannot be empty");
+    }
     const webglTexture = gl.createTexture();
+    if (!webglTexture) {
+      throw new Error("The webglTexture cannot be empty");
+    }
     const texture = new Texture(webglTexture);
     this.texture = texture;
     const image = new Image();
     const loadingManager = this.loadingManager;
-    image.onload = function () {
-      function handleTextureLoaded(image, texture) {
-        gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    const checkGLError = (gl: WebGLRenderingContext, msg: string) => {
+      const error = gl.getError();
+      if (error !== gl.NO_ERROR) {
+        console.error(msg, error);
+      }
+    };
+
+    image.onload = () => {
+      try {
+        gl.bindTexture(gl.TEXTURE_2D, webglTexture);
+        checkGLError(gl, "Error after binding texture");
+
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        checkGLError(gl, "Error after setting pixel store mode");
+
         gl.texImage2D(
           gl.TEXTURE_2D,
           0,
@@ -27,18 +44,29 @@ class TextureLoader {
           gl.UNSIGNED_BYTE,
           image,
         );
+        checkGLError(gl, "Error after uploading texture image");
+
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        checkGLError(gl, "Error after setting TEXTURE_MAG_FILTER");
+
         gl.texParameteri(
           gl.TEXTURE_2D,
           gl.TEXTURE_MIN_FILTER,
           gl.LINEAR_MIPMAP_NEAREST,
         );
-        gl.generateMipmap(gl.TEXTURE_2D);
-        gl.bindTexture(gl.TEXTURE_2D, null);
-      }
-      handleTextureLoaded(image, webglTexture);
+        checkGLError(gl, "Error after setting TEXTURE_MIN_FILTER");
 
-      loadingManager.itemEnd();
+        gl.generateMipmap(gl.TEXTURE_2D);
+        checkGLError(gl, "Error after generating mipmaps");
+
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        checkGLError(gl, "Error after unbinding texture");
+
+        loadingManager.itemEnd();
+      } catch (e) {
+        console.error("Exception during texture loading:", e);
+        checkGLError(gl, "Exception during texture loading");
+      }
     };
 
     image.onerror = () => {

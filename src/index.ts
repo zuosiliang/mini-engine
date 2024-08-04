@@ -7,23 +7,48 @@ import MeshBasicMaterial from "./materials/MeshBasicMaterial";
 import PointLight from "./lights/PointLight";
 import Skybox from "./extras/Skybox";
 import Plane from "./geometries/Plane";
-import BrowseControl from "./controls/BrowseControl";
 import OrbitControl from "./controls/OrbitControl";
 import TextureLoader from "./loaders/TextureLoader";
 import OutlineRenderer from "./effectRenderers/OutlineRenderer";
 import GPUPicker from "./extras/GPUPicker";
+import World from "./core/World";
 
 const main = () => {
-  const canvasDom = document.getElementById("glCanvas");
-  const renderer = new Renderer(canvasDom);
-  const { world } = renderer;
+  const canvasDom = document.getElementById("glCanvas") as HTMLCanvasElement;
+  const renderer = new Renderer(canvasDom as HTMLCanvasElement);
+  const world = new World();
   const box = new Box();
 
   const plane = new Plane();
-  const light1 = new PointLight([0, 0, -3], [1, 1, 1], 1.0, 0.09, 0.032);
-  const light2 = new PointLight([0, 0, 0], [1, 1, 1], 1.0, 0.09, 0.032);
-  const light3 = new PointLight([-5, -5, -5], [1, 1, 1], 1.0, 0.09, 0.032);
-  const light4 = new PointLight([0, 0, -2], [1, 1, 1], 1.0, 0.09, 0.032);
+
+  const light1 = new PointLight({
+    position: [0, 0, -3],
+    color: [1, 1, 1],
+    constant: 1.0,
+    linear: 0.09,
+    quadratic: 0.032,
+  });
+  const light2 = new PointLight({
+    position: [0, 0, 0],
+    color: [1, 1, 1],
+    constant: 1.0,
+    linear: 0.09,
+    quadratic: 0.032,
+  });
+  const light3 = new PointLight({
+    position: [-5, -5, -5],
+    color: [1, 1, 1],
+    constant: 1.0,
+    linear: 0.09,
+    quadratic: 0.032,
+  });
+  const light4 = new PointLight({
+    position: [0, 0, -2],
+    color: [1, 1, 1],
+    constant: 1.0,
+    linear: 0.09,
+    quadratic: 0.032,
+  });
 
   const textureLoader = new TextureLoader();
   const colorMap = textureLoader.load(
@@ -69,12 +94,12 @@ const main = () => {
   mesh3.rotateX(-Math.PI * 2);
   mesh3.setScale(1, 1, 1);
 
-  const camera = new Camera(
-    (45 * Math.PI) / 180,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    100.0,
-  );
+  const camera = new Camera({
+    fov: (45 * Math.PI) / 180,
+    aspect: window.innerWidth / window.innerHeight,
+    near: 0.1,
+    far: 100.0,
+  });
 
   window.addEventListener("resize", () => {
     camera.setAspect(window.innerWidth / window.innerHeight);
@@ -86,16 +111,17 @@ const main = () => {
   // camera.updateMatrix();
 
   const skybox = new Skybox([
-    "../right1.jpg",
-    "../left1.jpg",
-    "../top1.jpg",
-    "../bottom1.jpg",
-    "../back1.jpg",
-    "../front1.jpg",
+    "../right.jpg",
+    "../left.jpg",
+    "../bottom.jpg",
+    "../top.jpg",
+    "../front.jpg",
+
+    "../back.jpg",
   ]);
 
-  // const picker = new GPUPicker({ renderer, canvas: canvasDom });
-  const controls = new OrbitControl(camera, canvasDom);
+  const picker = new GPUPicker();
+  new OrbitControl(camera, canvasDom);
   world.add(mesh);
   world.add(mesh2);
   world.add(mesh3);
@@ -109,11 +135,14 @@ const main = () => {
 
   // const controls = new BrowseControl(canvasDom, camera);
 
-  // const outlineRenderer = new OutlineRenderer({ renderer });
+  const outlineRenderer = new OutlineRenderer();
 
-  const pointer = { x: null, y: null };
+  const pointer: {
+    x: number;
+    y: number;
+  } = { x: 0, y: 0 };
 
-  const onPointerMove = (e) => {
+  const onPointerMove = (e: MouseEvent) => {
     pointer.x = e.clientX;
     pointer.y = canvasDom.height - e.clientY;
   };
@@ -121,18 +150,19 @@ const main = () => {
   canvasDom.addEventListener("pointermove", onPointerMove);
   // canvasDom.addEventListener("click", onPointerMove);
 
-  const r = (time) => {
-    time *= 0.001;
+  const r = () => {
+    // time *= 0.001;
 
     // const cameraPosition = [Math.cos(time * 0.1), 0, Math.sin(time * 0.1)];
     // camera.setPosition(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
 
-    // const selected = picker.pick(pointer) ?? [];
+    const selected = picker.pick(pointer, world) ?? [];
+    mesh3.rotateX(Math.PI / 100);
     camera.updateMatrix();
-    // outlineRenderer.updateSelectedObjects(selected);
-    // outlineRenderer.render();
+    outlineRenderer.updateSelectedObjects(selected);
+    outlineRenderer.render(world);
 
-    renderer.render();
+    // renderer.render(world);
     requestAnimationFrame(r);
   };
   requestAnimationFrame(r);

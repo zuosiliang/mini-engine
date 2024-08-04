@@ -1,27 +1,21 @@
 import Mesh from "../core/Mesh";
 import MeshBasicMaterial from "../materials/MeshBasicMaterial";
+import Renderer from "../core/Renderer";
+import World from "../core/World";
 
+interface MeshPair {
+  originMesh: Mesh;
+  outlineMesh?: Mesh;
+}
 class OutlineRenderer {
-  modifiedMorld: any[];
-  gl: any;
-  constructor(configs) {
-    const { renderer, outlineColor, outlineSize } = configs;
-    const { world, gl, skybox } = renderer;
+  meshPaires: MeshPair[] = [];
+  renderer: Renderer = new Renderer();
+  selectedObjects: string[] = [];
 
-    this.selectedObjects = [];
-    this.renderer = renderer;
-    this.gl = gl;
-    this.skybox = skybox;
-  }
-
-  updateSelectedObjects(selectedObjects) {
-    const { world } = this.renderer;
-    this.selectedObjects = selectedObjects;
-
-    const modifiedWorld = [];
-    world.objs.forEach((mesh: Mesh) => {
-      const pair = {};
-      pair.originMesh = mesh;
+  #createMeshPaires(world: World) {
+    const meshPaires: MeshPair[] = [];
+    world.meshes.forEach((mesh: Mesh) => {
+      const pair: MeshPair = { originMesh: mesh };
 
       if (this.selectedObjects.includes(mesh.id)) {
         const outlineMesh = new Mesh(
@@ -40,13 +34,23 @@ class OutlineRenderer {
         pair.outlineMesh = outlineMesh;
       }
 
-      modifiedWorld.push(pair);
+      meshPaires.push(pair);
     });
-    this.modifiedMorld = modifiedWorld;
+    this.meshPaires = meshPaires;
+  }
+  updateSelectedObjects(selectedObjects: string[]) {
+    this.selectedObjects = selectedObjects;
   }
 
-  render() {
-    const { gl, skybox } = this;
+  render(world: World) {
+    if (!world) {
+      throw new Error("world can not be empty!");
+    }
+    this.#createMeshPaires(world);
+    const { gl, skybox } = this.renderer;
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
+    }
     gl.enable(gl.STENCIL_TEST);
 
     gl.enable(gl.DEPTH_TEST);
@@ -57,9 +61,7 @@ class OutlineRenderer {
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 
-    skybox.render();
-
-    this.modifiedMorld.forEach((pair) => {
+    this.meshPaires.forEach((pair) => {
       if (pair.outlineMesh) {
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
         gl.stencilFunc(gl.ALWAYS, 1, 0xff);
@@ -73,6 +75,10 @@ class OutlineRenderer {
         pair.originMesh.render();
       }
     });
+
+    if (skybox) {
+      skybox.render();
+    }
   }
 }
 

@@ -6,7 +6,8 @@ uniform mat4 uProjectionMatrix;
 uniform mat4 uViewMatrix;
 
 void main(void) {
-    vTextureCoord = aVertexPosition;
+    // Flip the y-coordinate
+    vTextureCoord = vec3(aVertexPosition.x, -aVertexPosition.y, aVertexPosition.z);
     vec4 pos = uProjectionMatrix * uViewMatrix * vec4(aVertexPosition, 1.0);
     gl_Position = pos.xyww;
 }

@@ -1,32 +1,28 @@
 import Renderer from "./Renderer";
 import { vec3, mat4, mat3, vec4 } from "gl-matrix";
+import { AttributeType } from "../geometries/Geometry";
 
-type DefineConfig = {
+interface DefineConfig {
   pointLight?: number;
-};
-
-type AttributeType = "positions" | "normals" | "uvs";
+}
 
 class Shader {
-  uniforms: Record<string, mat4 | mat3 | vec3 | vec4 | number>;
-  attributeTypes: AttributeType[];
-  vsSource: string;
-  fsSource: string;
+  attributeTypes: AttributeType[] = [];
+  vsSource: string = "";
+  fsSource: string = "";
   renderer: Renderer;
-  shaderProgram: WebGLProgram | undefined;
+  shaderProgram: WebGLProgram | null = null;
   constructor(vsSource: string, fsSource: string, defineConfig?: DefineConfig) {
-    this.renderer = window.renderer;
+    this.renderer = new Renderer();
     this.vsSource = defineConfig
-      ? this.modifyDefines(vsSource, defineConfig)
+      ? this.#modifyDefines(vsSource, defineConfig)
       : vsSource;
 
     this.fsSource = defineConfig
-      ? this.modifyDefines(fsSource, defineConfig)
+      ? this.#modifyDefines(fsSource, defineConfig)
       : fsSource;
 
-    this.initShaderProgram(this.vsSource, this.fsSource);
-    this.uniforms = {};
-    this.attributeTypes = [];
+    this.#initShaderProgram(this.vsSource, this.fsSource);
   }
 
   updateAttributes(attributeTypes: AttributeType[]) {
@@ -34,70 +30,112 @@ class Shader {
   }
 
   setMat4(name: string, value: mat4) {
-    const { gl } = this.renderer;
-    if (this.shaderProgram) {
-      this.uniforms[name] = value;
-      gl.uniformMatrix4fv(
-        gl.getUniformLocation(this.shaderProgram, name),
-        false,
-        value,
-      );
+    const {
+      renderer: { gl },
+      shaderProgram,
+    } = this;
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
     }
+    if (!shaderProgram) {
+      throw new Error("the shader can not be empty");
+    }
+    gl.uniformMatrix4fv(
+      gl.getUniformLocation(shaderProgram, name),
+      false,
+      value,
+    );
   }
 
   setMat3(name: string, value: mat3) {
-    const { gl } = this.renderer;
-    if (this.shaderProgram) {
-      this.uniforms[name] = value;
-      gl.uniformMatrix3fv(
-        gl.getUniformLocation(this.shaderProgram, name),
-        false,
-        value,
-      );
+    const {
+      renderer: { gl },
+      shaderProgram,
+    } = this;
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
     }
+    if (!shaderProgram) {
+      throw new Error("the shader can not be empty");
+    }
+    gl.uniformMatrix3fv(
+      gl.getUniformLocation(shaderProgram, name),
+      false,
+      value,
+    );
   }
 
   setVec4(name: string, value: vec4) {
-    const { gl } = this.renderer;
-    if (this.shaderProgram) {
-      this.uniforms[name] = value;
-      gl.uniform4fv(gl.getUniformLocation(this.shaderProgram, name), value);
+    const {
+      renderer: { gl },
+      shaderProgram,
+    } = this;
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
     }
+    if (!shaderProgram) {
+      throw new Error("the shader can not be empty");
+    }
+    gl.uniform4fv(gl.getUniformLocation(shaderProgram, name), value);
   }
 
   setVec3(name: string, value: vec3) {
-    const { gl } = this.renderer;
-    if (this.shaderProgram) {
-      this.uniforms[name] = value;
-      gl.uniform3fv(gl.getUniformLocation(this.shaderProgram, name), value);
+    const {
+      renderer: { gl },
+      shaderProgram,
+    } = this;
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
     }
+    if (!shaderProgram) {
+      throw new Error("the shader can not be empty");
+    }
+    gl.uniform3fv(gl.getUniformLocation(shaderProgram, name), value);
   }
 
   setInt(name: string, value: number) {
-    const { gl } = this.renderer;
-    if (this.shaderProgram) {
-      this.uniforms[name] = value;
-      gl.uniform1i(gl.getUniformLocation(this.shaderProgram, name), value);
+    const {
+      renderer: { gl },
+      shaderProgram,
+    } = this;
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
     }
+    if (!shaderProgram) {
+      throw new Error("the shader can not be empty");
+    }
+    gl.uniform1i(gl.getUniformLocation(shaderProgram, name), value);
   }
 
   setFloat(name: string, value: number) {
-    const { gl } = this.renderer;
-    if (this.shaderProgram) {
-      this.uniforms[name] = value;
-      gl.uniform1f(gl.getUniformLocation(this.shaderProgram, name), value);
+    const {
+      renderer: { gl },
+      shaderProgram,
+    } = this;
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
     }
+    if (!shaderProgram) {
+      throw new Error("the shader can not be empty");
+    }
+    gl.uniform1f(gl.getUniformLocation(shaderProgram, name), value);
   }
 
-  setFloatArr(name: string, value: any) {
-    const { gl } = this.renderer;
-    if (this.shaderProgram) {
-      this.uniforms[name] = value;
-      gl.uniform1fv(gl.getUniformLocation(this.shaderProgram, name), value);
+  setFloatArr(name: string, value: Float32Array) {
+    const {
+      renderer: { gl },
+      shaderProgram,
+    } = this;
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
     }
+    if (!shaderProgram) {
+      throw new Error("the shader can not be empty");
+    }
+    gl.uniform1fv(gl.getUniformLocation(shaderProgram, name), value);
   }
 
-  private modifyDefines(src: string, defineConfig: DefineConfig) {
+  #modifyDefines(src: string, defineConfig: DefineConfig) {
     const lines = src.split("\n");
 
     if (defineConfig.pointLight !== undefined) {
@@ -107,11 +145,15 @@ class Shader {
     return lines.join("\n");
   }
 
-  private loadShader(type: number, source: string): WebGLShader | null {
-    const { gl } = this.renderer;
+  #loadShader(type: number, source: string): WebGLShader | null {
+    const {
+      renderer: { gl },
+    } = this;
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
+    }
 
     const shader = gl.createShader(type);
-
     if (!shader) {
       throw new Error("Something went wrong while creating the shader");
     }
@@ -131,11 +173,16 @@ class Shader {
     return shader;
   }
 
-  private initShaderProgram(vsSource: string, fsSource: string): void {
-    const { gl } = this.renderer;
+  #initShaderProgram(vsSource: string, fsSource: string): void {
+    const {
+      renderer: { gl },
+    } = this;
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
+    }
 
-    const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);
-    const fragmentShader = this.loadShader(gl.FRAGMENT_SHADER, fsSource);
+    const vertexShader = this.#loadShader(gl.VERTEX_SHADER, vsSource);
+    const fragmentShader = this.#loadShader(gl.FRAGMENT_SHADER, fsSource);
 
     if (!vertexShader || !fragmentShader) {
       throw new Error("shader cannot be empty!");
@@ -162,7 +209,13 @@ class Shader {
   }
 
   use() {
-    const { gl } = this.renderer;
+    const {
+      renderer: { gl },
+    } = this;
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
+    }
+
     if (this.shaderProgram) {
       gl.useProgram(this.shaderProgram);
     }

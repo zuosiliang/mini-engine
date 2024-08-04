@@ -1,32 +1,37 @@
 import { mat4, vec3 } from "gl-matrix";
+import Object3D from "../core/Object3D";
 
-class PerspectiveCamera {
+interface PerspectiveCameraProps {
   fov: number;
   aspect: number;
   near: number;
   far: number;
-  position: vec3;
-  target: vec3;
-  up: vec3;
-  projectionMatrix!: mat4;
-  viewMatrix!: mat4;
+  position?: ThreeNumbers;
+  target?: ThreeNumbers;
+  up?: ThreeNumbers;
+}
 
-  constructor(
-    fov: number,
-    aspect: number,
-    near: number,
-    far: number,
-    position?: vec3,
-    target?: vec3,
-    up?: vec3,
-  ) {
+class PerspectiveCamera extends Object3D {
+  fov: number;
+  aspect: number;
+  near: number;
+  far: number;
+  position: ThreeNumbers = [0, 0, 0];
+  target: ThreeNumbers = [0, 0, 0];
+  up: ThreeNumbers = [0, 1, 0];
+  projectionMatrix: mat4 = mat4.create();
+  viewMatrix: mat4 = mat4.create();
+
+  constructor(props: PerspectiveCameraProps) {
+    const { fov, aspect, near, far, position, target, up } = props;
+    super(position);
     this.fov = fov;
     this.aspect = aspect;
     this.near = near;
     this.far = far;
-    this.position = position ?? vec3.fromValues(0, 0, 0);
-    this.target = target ?? vec3.fromValues(0, 0, 0);
-    this.up = up ?? vec3.fromValues(0, 1, 0);
+    this.position = position ?? this.position;
+    this.target = target ?? this.target;
+    this.up = up ?? this.up;
     this.updateMatrix();
   }
   setPosition(x: number, y: number, z: number) {

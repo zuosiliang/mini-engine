@@ -1,25 +1,35 @@
 import World from "./World";
 import Camera from "../cameras/PerspectiveCamera";
-import Light from "../lights/Light";
 import Skybox from "../extras/Skybox";
 import LoadingManager from "../loaders/LoadingManager";
 import Shader from "./Shader";
+import PointLight from "../lights/PointLight";
 
 export enum MaterialType {
   MeshPhongMaterial = "MeshPhongMaterial",
   MeshBasicMaterial = "MeshBasicMaterial",
 }
 
+let rendererInstance: Renderer;
 class Renderer {
-  gl!: WebGL2RenderingContext;
-  canvas!: HTMLCanvasElement;
-  world: World | undefined;
-  camera: Camera;
-  lights: Light[];
-  skybox: Skybox | undefined;
-  shaders: Record<MaterialType, null | Shader>;
+  gl: WebGL2RenderingContext | null = null;
+  canvas: HTMLCanvasElement | null = null;
+  camera: Camera | null = null;
+  lights: PointLight[] = [];
+  skybox: Skybox | null = null;
+  shaders: Record<MaterialType, null | Shader> = {
+    MeshPhongMaterial: null,
+    MeshBasicMaterial: null,
+  };
+  loadingManager: LoadingManager = new LoadingManager();
 
   constructor(canvas?: HTMLCanvasElement) {
+    if (rendererInstance) {
+      return rendererInstance;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    rendererInstance = this;
+
     if (canvas) {
       this.canvas = canvas;
     } else {
@@ -36,66 +46,59 @@ class Renderer {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
     this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+    this.gl.enable(gl.STENCIL_TEST);
+    this.gl.enable(gl.DEPTH_TEST);
+    this.gl.depthFunc(gl.LEQUAL);
 
-    window.renderer = this;
-    window.loadingManager = new LoadingManager();
-
-    this.world = new World();
-
-    this.camera = new Camera(
-      (45 * Math.PI) / 180,
-      canvas.clientWidth / canvas.clientHeight,
-      0.1,
-      100.0,
-    );
-
-    this.lights = [];
-    this.shaders = {
-      MeshPhongMaterial: null,
-      MeshBasicMaterial: null,
-    };
+    this.camera = new Camera({
+      fov: (45 * Math.PI) / 180,
+      aspect: canvas.clientWidth / canvas.clientHeight,
+      near: 0.1,
+      far: 100.0,
+    });
   }
 
   resize(w: number, h: number) {
-    this.canvas.width = w;
-    this.canvas.height = h;
-    this.gl.viewport(0, 0, w, h);
+    const { canvas, gl } = this;
+    if (!canvas) {
+      throw new Error("the canvas went wrong");
+    }
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
+    }
+    canvas.width = w;
+    canvas.height = h;
+    gl.viewport(0, 0, w, h);
   }
 
-  updateCamera(newCamera: Camera) {
-    this.camera = newCamera;
+  updateCamera(camera: Camera) {
+    this.camera = camera;
   }
 
-  updateLights(newLight: Light) {
-    this.lights = [...this.lights, newLight];
+  updateLights(light: PointLight) {
+    this.lights = [...this.lights, light];
   }
 
   updateSkybox(newSkybox: Skybox) {
     this.skybox = newSkybox;
   }
 
-  render() {
-    // window.loadingManager.setOnLoad(() => {
-    if (!this.world) {
-      throw new Error("world is undefined");
+  render(world: World) {
+    if (!world) {
+      throw new Error("world can not be empty!");
     }
     const { gl, skybox } = this;
-    gl.enable(gl.STENCIL_TEST);
-
-    gl.enable(gl.DEPTH_TEST);
-    gl.depthFunc(gl.LEQUAL);
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
+    }
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clearDepth(1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 
-    gl.depthMask(false);
-
-    skybox.render();
-    gl.depthMask(true);
-
-    this.world.render();
-
-    // });
+    world.render();
+    if (skybox) {
+      skybox.render();
+    }
   }
 }
 

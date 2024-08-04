@@ -1,7 +1,7 @@
 class Texture {
-  texture: WebGLTexture;
-  constructor(texture: WebGLTexture) {
-    this.texture = texture;
+  webglTexture: WebGLTexture;
+  constructor(webglTexture: WebGLTexture) {
+    this.webglTexture = webglTexture;
   }
 }
 

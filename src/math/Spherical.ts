@@ -26,15 +26,15 @@ class Spherical {
     return this;
   }
 
-  setFromVector3(v) {
+  setFromVector3(v: ThreeNumbers) {
     return this.setFromCartesianCoords(v[0], v[1], v[2]);
   }
 
-  private clamp(value, min, max) {
+  #clamp(value: number, min: number, max: number) {
     return Math.max(min, Math.min(max, value));
   }
 
-  setFromCartesianCoords(x, y, z) {
+  setFromCartesianCoords(x: number, y: number, z: number) {
     this.radius = Math.sqrt(x * x + y * y + z * z);
 
     if (this.radius === 0) {
@@ -42,7 +42,7 @@ class Spherical {
       this.phi = 0;
     } else {
       this.theta = Math.atan2(x, z);
-      this.phi = Math.acos(this.clamp(y / this.radius, -1, 1));
+      this.phi = Math.acos(this.#clamp(y / this.radius, -1, 1));
     }
 
     return this;

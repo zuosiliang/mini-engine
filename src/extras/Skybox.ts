@@ -1,9 +1,8 @@
-import Renderer from "../core/Renderer";
 import Shader from "../core/Shader";
 import CubemapShader from "../shaders/CubemapShader";
-import Geometry from "../geometries/Geometry";
-import { vec3, quat, mat4, mat3 } from "gl-matrix";
+import { mat4, mat3 } from "gl-matrix";
 import LoadingManager from "../loaders/LoadingManager";
+import { BufferObject } from "../geometries/Geometry";
 
 type SkyboxSrcs = [
   right: string,
@@ -14,32 +13,23 @@ type SkyboxSrcs = [
   front: string,
 ];
 
-class Skybox extends Geometry {
-  texture: WebGLTexture | null | undefined;
-  loadingManager: LoadingManager;
-  bind(): void {
-    throw new Error("Method not implemented.");
-  }
-  updateShader(shader: Shader): void {
-    throw new Error("Method not implemented.");
-  }
-  srcs: SkyboxSrcs;
-  renderer: Renderer;
-
+class Skybox extends BufferObject<"positions" | "indices"> {
+  texture: WebGLTexture | null = null;
+  loadingManager: LoadingManager = new LoadingManager();
+  srcs: SkyboxSrcs | [] = [];
+  shader: Shader = new Shader(CubemapShader.vsSource, CubemapShader.fsSource);
   constructor(files: SkyboxSrcs) {
     super();
-    this.srcs = files;
-    this.renderer = window.renderer;
-    this.loadingManager = window.loadingManager;
-
-    this.createShaderProgram();
-
-    this.initBuffers();
-    this.initTexture();
+    this.srcs = files ?? this.srcs;
+    this.#initBuffers();
+    this.#initTexture();
   }
 
-  private initTexture() {
+  #initTexture() {
     const { gl } = this.renderer;
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
+    }
     const { srcs } = this;
 
     const skyboxTexture = gl.createTexture();
@@ -56,7 +46,9 @@ class Skybox extends Geometry {
 
     faceInfos.forEach((faceInfo) => {
       const { target, url } = faceInfo;
-
+      if (!url) {
+        throw new Error("provided pictures are not complete");
+      }
       const level = 0;
       const internalFormat = gl.RGBA;
       const width = 512;
@@ -81,6 +73,7 @@ class Skybox extends Geometry {
 
       image.onload = () => {
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, skyboxTexture);
+        // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
         gl.texImage2D(target, level, internalFormat, format, type, image);
         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
         this.loadingManager.itemEnd();
@@ -105,34 +98,12 @@ class Skybox extends Geometry {
 
     this.texture = skyboxTexture;
   }
-  private createShaderProgram() {
-    const shader = new Shader(CubemapShader.vsSource, CubemapShader.fsSource);
-    this.shader = shader;
-  }
 
-  initBuffers() {
+  #initBuffers() {
     const { gl } = this.renderer;
-    // Define the vertices of a cube
-    // const positions = [
-    //   // Front face
-    //   -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1,
-
-    //   // Back face
-    //   -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1,
-
-    //   // Top face
-    //   -1, 1, -1, -1, 1, 1, 1, 1, 1, 1, 1, -1,
-
-    //   // Bottom face
-    //   -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1,
-
-    //   // Right face
-    //   1, -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1,
-
-    //   // Left face
-    //   -1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1,
-    // ];
-
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
+    }
     const positions = [
       // Positions
       1.0,
@@ -265,18 +236,37 @@ class Skybox extends Geometry {
     };
   }
 
-  private draw() {
+  #draw() {
     const { gl } = this.renderer;
-
-    const vertexCount = this.buffers.indices.data.length;
-    gl.drawElements(gl.TRIANGLES, vertexCount, gl.UNSIGNED_SHORT, 0);
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
+    }
+    if (this.buffers?.indices) {
+      const vertexCount = this.buffers.indices.data.length;
+      gl.drawElements(gl.TRIANGLES, vertexCount, gl.UNSIGNED_SHORT, 0);
+    }
   }
 
   render() {
-    const { gl, camera } = this.renderer;
-    const { shaderProgram } = this.shader;
-    const { buffers, shader } = this;
+    const {
+      buffers,
+      shader,
+      shader: { shaderProgram } = {},
+      renderer: { gl, camera },
+    } = this;
 
+    if (!gl) {
+      throw new Error("the gl context can not be empty");
+    }
+    if (!shaderProgram) {
+      throw new Error("the shader can not be empty");
+    }
+    if (!buffers) {
+      throw new Error("the buffers can not be empty");
+    }
+    if (!camera) {
+      throw new Error("the camera can not be empty");
+    }
     shader.use();
     const vertexPosition = gl.getAttribLocation(
       shaderProgram,
@@ -288,6 +278,10 @@ class Skybox extends Geometry {
       const normalize = false;
       const stride = 0;
       const offset = 0;
+
+      if (!buffers.positions) {
+        throw new Error("the positions buffer is empty");
+      }
       gl.bindBuffer(gl.ARRAY_BUFFER, buffers.positions.buffer);
       gl.vertexAttribPointer(
         vertexPosition,
@@ -298,6 +292,9 @@ class Skybox extends Geometry {
         offset,
       );
       gl.enableVertexAttribArray(vertexPosition);
+    }
+    if (!buffers.indices) {
+      throw new Error("the indices buffer is empty");
     }
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices.buffer);
 
@@ -323,7 +320,7 @@ class Skybox extends Geometry {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.texture);
 
-    this.draw();
+    this.#draw();
   }
 }
 

@@ -1,34 +1,40 @@
-import Camera from "../cameras/PerspectiveCamera";
+import PerspectiveCamera from "../cameras/PerspectiveCamera";
 import Renderer from "./Renderer";
-import Light from "../lights/Light";
+import PointLight from "../lights/PointLight";
 import Mesh from "./Mesh";
 import Skybox from "../extras/Skybox";
 
+type Thing = Mesh | PerspectiveCamera | PointLight | Skybox;
+
+let worldInstance: World;
 class World {
-  objs: Mesh[];
-  renderer: Renderer;
+  meshes: Mesh[] = [];
+  renderer: Renderer = new Renderer();
   constructor() {
-    this.objs = [];
-    this.renderer = window.renderer;
+    if (worldInstance) {
+      return worldInstance;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    worldInstance = this;
   }
-  add(obj: Mesh | Camera | Light | Skybox) {
-    if (obj instanceof Camera) {
-      this.renderer.updateCamera(obj);
+  add(thing: Thing) {
+    if (thing instanceof PerspectiveCamera) {
+      this.renderer.updateCamera(thing);
       return;
     }
-    if (obj instanceof Light) {
-      this.renderer.updateLights(obj);
+    if (thing instanceof PointLight) {
+      this.renderer.updateLights(thing);
       return;
     }
-    if (obj instanceof Skybox) {
-      this.renderer.updateSkybox(obj);
+    if (thing instanceof Skybox) {
+      this.renderer.updateSkybox(thing);
       return;
     }
-    this.objs = [...this.objs, obj];
+    this.meshes = [...this.meshes, thing];
   }
   render() {
-    this.objs.forEach((obj) => {
-      obj.render();
+    this.meshes.forEach((mesh) => {
+      mesh.render();
     });
   }
 }

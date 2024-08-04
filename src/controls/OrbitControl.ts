@@ -2,7 +2,7 @@ import Camera from "../cameras/PerspectiveCamera";
 import Spherical from "../math/Spherical";
 import { vec2, vec3 } from "gl-matrix";
 
-const convertSphericalToVec3 = (s) => {
+const convertSphericalToVec3 = (s: Spherical) => {
   const { radius, phi, theta } = s;
   const sinPhiRadius = Math.sin(phi) * radius;
 
@@ -16,34 +16,29 @@ const convertSphericalToVec3 = (s) => {
 class OrbitControl {
   camera: Camera;
   canvas: HTMLCanvasElement;
-  rotateStart: vec2;
-  rotateEnd: vec2;
-  rotateDelta: vec2;
-  target: vec3;
-  rotateSpeed: number;
-  sphericalDelta: Spherical;
-  spherical: Spherical;
-  onMouseDown: (event: any) => void;
+  rotateStart: vec2 = vec2.create();
+  rotateEnd: vec2 = vec2.create();
+  rotateDelta: vec2 = vec2.create();
+  target: ThreeNumbers = [0, 0, 0];
+  rotateSpeed: number = 1;
+  sphericalDelta: Spherical = new Spherical();
+  spherical: Spherical = new Spherical();
   constructor(camera: Camera, canvas: HTMLCanvasElement) {
     this.camera = camera;
     this.canvas = canvas;
-    this.rotateStart = vec2.create();
-    this.rotateEnd = vec2.create();
 
-    this.rotateDelta = vec2.create();
-    this.target = vec3.create();
-    this.rotateSpeed = 1;
-    this.spherical = new Spherical();
-    this.sphericalDelta = new Spherical();
-
-    this.onMouseDown = (event) => {
+    const onMouseUp = () => {
+      this.canvas.removeEventListener("mousemove", onMouseMove);
+      this.canvas.removeEventListener("mouseup", onMouseUp);
+    };
+    const onMouseDown = (event: MouseEvent) => {
       vec2.set(this.rotateStart, event.clientX, event.clientY);
 
-      this.canvas.addEventListener("mousemove", this.onMouseMove);
-      this.canvas.addEventListener("mouseup", this.onMouseUp);
+      this.canvas.addEventListener("mousemove", onMouseMove);
+      this.canvas.addEventListener("mouseup", onMouseUp);
     };
 
-    this.onMouseMove = (event) => {
+    const onMouseMove = (event: MouseEvent) => {
       vec2.set(this.rotateEnd, event.clientX, event.clientY);
 
       vec2.subtract(this.rotateDelta, this.rotateEnd, this.rotateStart);
@@ -60,25 +55,21 @@ class OrbitControl {
       this.update();
     };
 
-    this.onMouseUp = () => {
-      this.canvas.removeEventListener("mousemove", this.onMouseMove);
-      this.canvas.removeEventListener("mouseup", this.onMouseUp);
-    };
-    this.canvas.addEventListener("mousedown", this.onMouseDown);
+    this.canvas.addEventListener("mousedown", onMouseDown);
   }
 
-  setTarget(target) {
+  setTarget(target: ThreeNumbers) {
     this.target = target;
   }
 
-  setRotateSpeed(speed) {
+  setRotateSpeed(speed: number) {
     this.rotateSpeed = speed;
   }
 
   update() {
     const position = this.camera.position;
 
-    let offset = vec3.create();
+    let offset: vec3 = [0, 0, 0];
 
     vec3.subtract(offset, position, this.target);
 
