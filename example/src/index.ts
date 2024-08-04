@@ -155,21 +155,21 @@ const main = () => {
   requestAnimationFrame(r);
 };
 
-const test = () => {
-  const canvasDom = document.getElementById("glCanvas");
-  const renderer = new T.Renderer(canvasDom);
-  const world = new T.World();
-  const box = new T.Box();
+// const test = () => {
+//   const canvasDom = document.getElementById("glCanvas");
+//   const renderer = new T.Renderer(canvasDom);
+//   const world = new T.World();
+//   const box = new T.Box();
 
-  const mesh = new T.Mesh(box, new T.MeshBasicMaterial({ color: [1, 0, 0] }));
+//   const mesh = new T.Mesh(box, new T.MeshBasicMaterial({ color: [1, 0, 0] }));
 
-  mesh.setPosition(0, 0, -5);
-  world.add(mesh);
+//   mesh.setPosition(0, 0, -5);
+//   world.add(mesh);
 
-  const tick = () => {
-    renderer.render(world);
-    requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
-};
-window.onload = test;
+//   const tick = () => {
+//     renderer.render(world);
+//     requestAnimationFrame(tick);
+//   };
+//   requestAnimationFrame(tick);
+// };
+window.onload = main;
